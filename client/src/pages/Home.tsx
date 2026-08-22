@@ -130,20 +130,24 @@ export default function Home() {
             <div className="choice-step flavor-first">
               <div className="step-heading"><span>1</span><div><small>أولًا</small><h3>تحبها إزاي؟</h3></div></div>
               <div className="flavor-row">{flavors.map((item) => <button key={item} className={flavor === item ? "active" : ""} onClick={() => setFlavor(item)}>{item}</button>)}</div>
-              <div className={`inline-extra ${potatoesCount > 0 ? "active" : ""}`}>
-                <div><span><Plus size={15} /></span><strong>أضف 4 قطع بطاطس</strong><small>15 ج.م</small></div>
-                <div className="mini-quantity-control"><button aria-label="إنقاص البطاطس" onClick={() => setPotatoesCount((count) => Math.max(0, count - 1))} disabled={potatoesCount === 0}><Minus size={14} /></button><output aria-label="عدد إضافات البطاطس">{potatoesCount}</output><button aria-label="زيادة البطاطس" onClick={() => setPotatoesCount((count) => Math.min(99, count + 1))}><Plus size={14} /></button></div>
+            </div>
+
+            <div className="choice-step last-step unified-menu-step">
+              <div className="step-heading"><span>2</span><div><small>المنيو كامل</small><h3>اختار اللي تحتاجه والعدد</h3></div></div>
+              <div className="portion-card-grid unified-card-grid">
+                {grapePortions.map(renderPortionCard)}
+                {fattaPortions.map(renderPortionCard)}
+                <article className={`portion-card potato-card ${potatoesCount > 0 ? "selected" : ""}`}>
+                  <div className="portion-card-head"><strong>4 قطع بطاطس</strong><em>15 <small>ج.م</small></em></div>
+                  <span>إضافة على طلبك</span>
+                  <div className="card-quantity" aria-label="عدد إضافات البطاطس">
+                    <button aria-label="إنقاص البطاطس" onClick={() => setPotatoesCount((count) => Math.max(0, count - 1))} disabled={potatoesCount === 0}><Minus size={14} /></button>
+                    <output aria-label="عدد إضافات البطاطس">{potatoesCount}</output>
+                    <button aria-label="زيادة البطاطس" onClick={() => setPotatoesCount((count) => Math.min(99, count + 1))}><Plus size={14} /></button>
+                  </div>
+                  {potatoesCount > 0 && <p>{potatoesCount} × 15 = <strong>{extrasTotal} ج.م</strong></p>}
+                </article>
               </div>
-            </div>
-
-            <div className="choice-step">
-              <div className="step-heading"><span>2</span><div><small>ورق العنب</small><h3>اختار الحجم والعدد</h3></div></div>
-              <div className="portion-card-grid">{grapePortions.map(renderPortionCard)}</div>
-            </div>
-
-            <div className="choice-step last-step fatta-choice">
-              <div className="step-heading"><span>3</span><div><small>اختياري</small><h3>فتة ورق عنب</h3></div></div>
-              <div className="portion-card-grid fatta-card-grid">{fattaPortions.map(renderPortionCard)}</div>
             </div>
           </div>
 

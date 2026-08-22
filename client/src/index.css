@@ -259,7 +259,7 @@ img { display:block; max-width:100%; }
 .compact-menu { gap:1.45rem; }
 .compact-menu .choice-step { padding-bottom:1.4rem; }
 .compact-menu .last-step { padding-bottom:0; }
-.flavor-first { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:1rem; }
+.flavor-first { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:1rem; }
 .flavor-first .step-heading { margin-bottom:0; }
 .flavor-first .flavor-row { justify-content:flex-start; }
 .inline-extra { display:flex; align-items:center; justify-content:space-between; gap:.75rem; padding:.5rem .6rem; background:var(--paper); transition:background 160ms var(--ease-out); }
@@ -270,6 +270,9 @@ img { display:block; max-width:100%; }
 .inline-extra small { color:#6c786e; font-size:.64rem; white-space:nowrap; }
 .portion-card-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:.6rem; }
 .portion-card-grid.fatta-card-grid { grid-template-columns:repeat(2,1fr); max-width:420px; }
+.unified-card-grid { grid-template-columns:repeat(4,1fr); }
+.potato-card .portion-card-head strong { color:var(--clay); }
+.potato-card { background:#fff9f6; }
 .portion-card { min-height:174px; display:flex; flex-direction:column; position:relative; padding:.85rem .75rem .7rem; border:1px solid var(--line); background:#fffdf8; transition:border 160ms var(--ease-out),background 160ms var(--ease-out),transform 160ms var(--ease-out); }
 .portion-card:hover,.portion-card.selected { border-color:var(--sage); background:#eef3eb; transform:translateY(-2px); }
 .portion-card.selected { box-shadow:inset 3px 0 0 var(--sage-deep); }
@@ -305,6 +308,7 @@ img { display:block; max-width:100%; }
 @media (max-width:1050px) {
   .flavor-first { grid-template-columns:1fr; align-items:start; }
   .portion-card-grid { grid-template-columns:repeat(3,1fr); }
+  .unified-card-grid { grid-template-columns:repeat(3,1fr); }
 }
 @media (max-width:900px) {
   .compact-menu-layout { grid-template-columns:1fr; }
@@ -315,6 +319,7 @@ img { display:block; max-width:100%; }
   .inline-extra { width:100%; }
   .portion-card-grid { grid-template-columns:repeat(2,1fr); }
   .portion-card-grid.fatta-card-grid { grid-template-columns:repeat(2,1fr); }
+  .unified-card-grid { grid-template-columns:repeat(2,1fr); }
   .portion-card { min-height:163px; }
   .portion-card:last-child:nth-child(odd) { grid-column:1 / -1; }
 }
