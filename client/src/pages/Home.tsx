@@ -1,6 +1,6 @@
 /**
  * Design note — «مطبخ على الورق»: warm ivory, dew-sage and clay accents;
- * editorial asymmetric food layout; tactile paper layers; calm, direct ordering.
+ * one short, calm ordering path where choice and price remain visible together.
  */
 import { useMemo, useState } from "react";
 import {
@@ -13,62 +13,66 @@ import {
   Menu,
   MessageCircle,
   Minus,
+  Music2,
   Plus,
   Send,
   ShoppingBag,
   Sparkles,
-  Utensils,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
 
 const WHATSAPP_NUMBER = ""; // أضيفي الرقم بصيغة 201XXXXXXXXX قبل الإطلاق.
+const TIKTOK_URL = ""; // أضيفي رابط TikTok الكامل هنا قبل الإطلاق.
 
 const heroImage = "/manus-storage/delicious-grape-leaves-hero_9c69dcdc.jpg";
 const detailImage = "/manus-storage/delicious-grape-leaves-detail_a83761d1.jpg";
-const tableImage = "/manus-storage/delicious-grape-leaves-table_fd7b8b07.jpg";
 const brandMark = "/manus-storage/delicious-grape-leaves-mark_7ed4eb45.png";
 
-const portions = [
-  { count: "20", price: 150, note: "لشخصين أو مزاجك لوحدك" },
-  { count: "30", price: 195, note: "للقعدة الصغيرة" },
-  { count: "50", price: 335, note: "الخيار المحبوب" },
-  { count: "80", price: 500, note: "للمة الحلوة" },
-  { count: "100", price: 600, note: "للعزومات" },
+type Product = "grape" | "fatta";
+type MenuItem = { id: string; title: string; description: string; price: number; tag?: string };
+
+const grapePortions: MenuItem[] = [
+  { id: "20", title: "20 حبة", description: "لشخصين أو مزاجك لوحدك", price: 150 },
+  { id: "30", title: "30 حبة", description: "للقعدة الصغيرة", price: 195 },
+  { id: "50", title: "50 حبة", description: "الأكثر طلبًا", price: 335, tag: "الأكثر طلبًا" },
+  { id: "80", title: "80 حبة", description: "للمة الحلوة", price: 500 },
+  { id: "100", title: "100 حبة", description: "للعزومات", price: 600 },
+];
+
+const fattaPortions: MenuItem[] = [
+  { id: "fatta-small", title: "فتة صغيرة", description: "طبق فردي متكامل", price: 150 },
+  { id: "fatta-large", title: "فتة كبيرة", description: "للمشاركة واللمة", price: 300, tag: "مناسبة للّمة" },
 ];
 
 const flavors = ["عادي", "حامض", "سبايسي", "ليمون زيادة"];
-
-const specialDishes = [
-  { name: "فتة ورق عنب صغيرة", price: 150 },
-  { name: "فتة ورق عنب كبيرة", price: 300 },
-];
 
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 export default function Home() {
-  const [portion, setPortion] = useState(portions[0]);
+  const [product, setProduct] = useState<Product>("grape");
+  const [selectedId, setSelectedId] = useState("30");
   const [flavor, setFlavor] = useState("عادي");
   const [potatoes, setPotatoes] = useState(false);
-  const [specialDish, setSpecialDish] = useState<(typeof specialDishes)[number] | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const activeItem = specialDish ?? portion;
-  const total = activeItem.price + (potatoes ? 15 : 0);
-  const itemLabel = specialDish ? specialDish.name : `${portion.count} حبة ورق عنب`;
-
-  const orderMessage = useMemo(
-    () =>
-      `أهلًا، أريد طلب من ورق العنب اللذيذ:\n` +
-      `• الطلب: ${itemLabel}\n` +
-      `• الطعم: ${flavor}\n` +
-      `• بطاطس: ${potatoes ? "إضافة 4 قطع" : "لا"}\n` +
-      `• الإجمالي: ${total} ج.م\n\n` +
-      `الاسم:\nالعنوان والمنطقة:\nالموعد المناسب:`,
-    [flavor, itemLabel, potatoes, total],
+  const options = product === "grape" ? grapePortions : fattaPortions;
+  const selectedItem = useMemo(
+    () => options.find((item) => item.id === selectedId) ?? options[0],
+    [options, selectedId],
   );
+  const total = selectedItem.price + (potatoes ? 15 : 0);
+  const productName = product === "grape" ? "ورق عنب" : "فتة ورق عنب";
+
+  const orderMessage = `أهلًا، أريد طلب من ورق العنب اللذيذ:\n` +
+    `• الصنف: ${productName}\n` +
+    `• الحجم: ${selectedItem.title}\n` +
+    `• الطعم: ${flavor}\n` +
+    `• بطاطس: ${potatoes ? "إضافة 4 قطع" : "لا"}\n` +
+    `• الإجمالي: ${total} ج.م\n\n` +
+    `الاسم:\nالعنوان والمنطقة:\nالموعد المناسب:`;
 
   const sendOrder = () => {
     if (!WHATSAPP_NUMBER) {
@@ -78,13 +82,17 @@ export default function Home() {
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(orderMessage)}`, "_blank", "noopener,noreferrer");
   };
 
-  const selectPortion = (item: (typeof portions)[number]) => {
-    setSpecialDish(null);
-    setPortion(item);
+  const chooseProduct = (nextProduct: Product) => {
+    setProduct(nextProduct);
+    setSelectedId(nextProduct === "grape" ? "30" : "fatta-small");
   };
 
-  const selectSpecial = (item: (typeof specialDishes)[number]) => {
-    setSpecialDish((current) => (current?.name === item.name ? null : item));
+  const openTikTok = () => {
+    if (!TIKTOK_URL) {
+      toast.info("سنضيف رابط TikTok هنا قبل الإطلاق.");
+      return;
+    }
+    window.open(TIKTOK_URL, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -92,21 +100,17 @@ export default function Home() {
       <header className="site-header" aria-label="التنقل الرئيسي">
         <a className="brand-lockup" href="#top" aria-label="ورق العنب اللذيذ - الرئيسية">
           <img src={brandMark} alt="رمز ورقة عنب مطوية" className="brand-mark" />
-          <span>
-            <strong>ورق العنب</strong>
-            <em>اللذيذ</em>
-          </span>
+          <span><strong>ورق العنب</strong><em>اللذيذ</em></span>
         </a>
 
         <nav className="desktop-nav" aria-label="أقسام الموقع">
-          <button onClick={() => scrollToSection("story")}>حكايتنا</button>
-          <button onClick={() => scrollToSection("menu")}>المنيو</button>
+          <button onClick={() => scrollToSection("order")}>المنيو</button>
           <button onClick={() => scrollToSection("delivery")}>التوصيل</button>
+          <button onClick={() => scrollToSection("contact")}>تواصل</button>
         </nav>
 
         <button className="header-order" onClick={sendOrder}>
-          <MessageCircle size={17} />
-          <span>اطلب الآن</span>
+          <MessageCircle size={17} /> اطلب الآن
         </button>
 
         <button
@@ -122,258 +126,127 @@ export default function Home() {
       {isMenuOpen && (
         <div className="mobile-menu" aria-label="قائمة الجوال">
           {[
-            ["حكايتنا", "story"],
-            ["المنيو", "menu"],
+            ["المنيو", "order"],
             ["التوصيل", "delivery"],
+            ["تواصل", "contact"],
           ].map(([label, id]) => (
-            <button
-              key={id}
-              onClick={() => {
-                setIsMenuOpen(false);
-                scrollToSection(id);
-              }}
-            >
-              {label}
-              <ArrowLeft size={18} />
+            <button key={id} onClick={() => { setIsMenuOpen(false); scrollToSection(id); }}>
+              {label}<ArrowLeft size={18} />
             </button>
           ))}
-          <button className="mobile-order" onClick={sendOrder}>
-            إرسال طلب عبر واتساب
-          </button>
+          <button className="mobile-order" onClick={sendOrder}>إرسال طلب عبر واتساب</button>
         </div>
       )}
 
       <section id="top" className="hero-section" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <div className="eyebrow"><Sparkles size={15} /> معمول على مزاجك في القاهرة</div>
-          <h1 id="hero-title">
-            ورق عنب
-            <span>يلفّ اليوم</span>
-            <i>ويفرّح القعدة.</i>
-          </h1>
-          <p>
-            وصفة منزلية بطعم متظبط. اختار الكمية والطعم، وإحنا نجهزهولك بعناية.
-          </p>
+          <div className="eyebrow"><Sparkles size={15} /> ورق عنب منزلي في القاهرة</div>
+          <h1 id="hero-title">لفّة متظبطة.<span>قعدة مبسوطة.</span></h1>
+          <p>اختار طلبك في أقل من دقيقة، وإحنا نجهزه على مزاجك.</p>
           <div className="hero-actions">
-            <button className="primary-cta" onClick={() => scrollToSection("menu")}>
-              شوف المنيو <ArrowLeft size={18} />
+            <button className="primary-cta" onClick={() => scrollToSection("order")}>
+              اطلب من المنيو <ArrowLeft size={18} />
             </button>
-            <button className="text-cta" onClick={() => scrollToSection("delivery")}>
-              <span>التوصيل في القاهرة</span>
-              <span className="text-cta-line" />
-            </button>
+            <span className="hero-note"><Leaf size={16} /> طازج عند الطلب</span>
           </div>
-          <div className="hero-footnote"><span /> طازج عند الطلب · تجهيز بحب</div>
         </div>
-
         <div className="hero-visual" aria-label="صينية ورق عنب طازج">
-          <div className="hero-image-wrap">
-            <img src={heroImage} alt="صينية ورق عنب محضرة طازجة بالليمون" />
-          </div>
-          <div className="hero-sticker hero-sticker-top"><Leaf size={18} /> لفّات متظبطة</div>
-          <div className="hero-sticker hero-sticker-bottom">
-            <span>01</span>
-            <small>اختيار اليوم</small>
-          </div>
+          <div className="hero-image-wrap"><img src={heroImage} alt="صينية ورق عنب محضرة طازجة بالليمون" /></div>
+          <div className="hero-sticker"><span>01</span><small>اختيار اليوم</small></div>
           <div className="hero-side-note">طعم بيتي<br />بشكل جديد</div>
         </div>
       </section>
 
-      <div className="rolling-line" aria-hidden="true">
-        <span>ورق عنب لذيذ</span><b>✦</b><span>يتحضّر بحب</span><b>✦</b><span>على مزاجك</span><b>✦</b><span>ورق عنب لذيذ</span>
-      </div>
-
-      <section id="story" className="story-section section-pad" aria-labelledby="story-title">
-        <div className="section-index">01 <span>/</span> حكاية الطعم</div>
-        <div className="story-grid">
-          <div className="story-media">
-            <div className="paper-frame frame-large">
-              <img src={detailImage} alt="طبق صغير من ورق العنب المحشي" />
-            </div>
-            <div className="story-mini-note">كل لفّة<br /><strong>بتتحضّر لوحدها.</strong></div>
-          </div>
-          <div className="story-copy">
-            <p className="mini-label">من مطبخنا لبيتك</p>
-            <h2 id="story-title">الفرق يبان<br />من أول <em>لفّة.</em></h2>
-            <p className="body-copy">
-              بنلفّ ورق العنب بحرص، ونوازن الحموضة والتتبيلة عشان كل حبة تبقى بطعمها. وجبة بيتية مريحة، لكن بتفاصيل تستاهلها القعدة.
-            </p>
-            <div className="story-points">
-              <span><Check size={15} /> تجهيز عند الطلب</span>
-              <span><Check size={15} /> اختيارات على مزاجك</span>
-              <span><Check size={15} /> مناسب للّمة والعزومة</span>
-            </div>
-            <button className="underline-link" onClick={() => scrollToSection("menu")}>
-              اختار طلبك <ArrowLeft size={17} />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section id="menu" className="menu-section section-pad" aria-labelledby="menu-title">
-        <div className="menu-head">
+      <section id="order" className="order-section" aria-labelledby="order-title">
+        <div className="order-intro">
           <div>
-            <div className="section-index">02 <span>/</span> المنيو</div>
-            <h2 id="menu-title">اختار <em>اللي يكفيك.</em></h2>
+            <div className="section-index">01 <span>/</span> اطلب بسهولة</div>
+            <h2 id="order-title">اختار طلبك<br /><em>في 3 خطوات.</em></h2>
           </div>
-          <p>غيّر الكمية والطعم، وراجع طلبك قبل ما تبعته على واتساب.</p>
+          <p>كل اختيار واضح قدامك، والسعر النهائي يظهر فورًا.</p>
         </div>
 
-        <div className="menu-layout">
-          <div className="menu-controls">
-            <div className="menu-group">
-              <div className="group-title"><span>أولًا</span><h3>كم حبة نفسك فيها؟</h3></div>
-              <div className="portion-list" role="radiogroup" aria-label="اختيار كمية ورق العنب">
-                {portions.map((item) => {
-                  const selected = !specialDish && portion.count === item.count;
+        <div className="order-layout">
+          <div className="steps-area">
+            <div className="choice-step">
+              <div className="step-heading"><span>1</span><div><small>اختار الصنف</small><h3>نفسك في إيه؟</h3></div></div>
+              <div className="product-switch">
+                <button className={product === "grape" ? "active" : ""} onClick={() => chooseProduct("grape")}>
+                  <Leaf size={21} /><span>ورق عنب</span><small>لفّات على مزاجك</small>
+                </button>
+                <button className={product === "fatta" ? "active" : ""} onClick={() => chooseProduct("fatta")}>
+                  <ShoppingBag size={20} /><span>فتة ورق عنب</span><small>طبق متكامل</small>
+                </button>
+              </div>
+            </div>
+
+            <div className="choice-step">
+              <div className="step-heading"><span>2</span><div><small>حدد الكمية</small><h3>{product === "grape" ? "كام حبة تكفيك؟" : "اختار الحجم المناسب"}</h3></div></div>
+              <div className={`size-grid ${product === "fatta" ? "fatta-grid" : ""}`} role="radiogroup" aria-label="اختيار حجم الطلب">
+                {options.map((item) => {
+                  const isSelected = selectedItem.id === item.id;
                   return (
-                    <button
-                      type="button"
-                      key={item.count}
-                      className={`portion-option ${selected ? "selected" : ""}`}
-                      role="radio"
-                      aria-checked={selected}
-                      onClick={() => selectPortion(item)}
-                    >
-                      <span className="portion-number">{item.count}<small>حبة</small></span>
-                      <span className="portion-note">{item.note}</span>
-                      <strong>{item.price}<small>ج.م</small></strong>
+                    <button key={item.id} className={`size-option ${isSelected ? "selected" : ""}`} role="radio" aria-checked={isSelected} onClick={() => setSelectedId(item.id)}>
+                      {item.tag && <b>{item.tag}</b>}
+                      <strong>{item.title}</strong>
+                      <span>{item.description}</span>
+                      <em>{item.price} <small>ج.م</small></em>
+                      {isSelected && <i><Check size={14} /></i>}
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            <div className="menu-group menu-group-split">
-              <div className="group-title"><span>أو</span><h3>فتة ورق عنب</h3></div>
-              <div className="special-grid">
-                {specialDishes.map((item) => {
-                  const selected = specialDish?.name === item.name;
-                  return (
-                    <button
-                      type="button"
-                      key={item.name}
-                      className={`special-option ${selected ? "selected" : ""}`}
-                      onClick={() => selectSpecial(item)}
-                    >
-                      <Utensils size={19} />
-                      <span>{item.name}</span>
-                      <strong>{item.price} <small>ج.م</small></strong>
-                    </button>
-                  );
-                })}
+            <div className="choice-step last-step">
+              <div className="step-heading"><span>3</span><div><small>خلّيه على مزاجك</small><h3>تحبه إزاي؟</h3></div></div>
+              <div className="flavor-row">
+                {flavors.map((item) => <button key={item} className={flavor === item ? "active" : ""} onClick={() => setFlavor(item)}>{item}</button>)}
               </div>
+              <button className={`potato-option ${potatoes ? "active" : ""}`} onClick={() => setPotatoes((current) => !current)} aria-pressed={potatoes}>
+                <span>{potatoes ? <Minus size={16} /> : <Plus size={16} />}</span>
+                <div><strong>أضف 4 قطع بطاطس</strong><small>إضافة اختيارية</small></div>
+                <em>+15 ج.م</em>
+              </button>
             </div>
           </div>
 
-          <aside className="order-card" aria-label="ملخص الطلب">
-            <div className="order-card-top">
-              <span>طلبك اليوم</span>
-              <ShoppingBag size={19} />
-            </div>
-            <div className="order-item-main">
-              <small>{specialDish ? "اختيار خاص" : "ورق عنب"}</small>
-              <strong>{itemLabel}</strong>
-              <span>{activeItem.price} ج.م</span>
-            </div>
-            <div className="flavor-picker">
-              <p>تحبه إزاي؟</p>
-              <div>
-                {flavors.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    className={flavor === item ? "active" : ""}
-                    onClick={() => setFlavor(item)}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button
-              type="button"
-              className={`extra-toggle ${potatoes ? "active" : ""}`}
-              onClick={() => setPotatoes((enabled) => !enabled)}
-              aria-pressed={potatoes}
-            >
-              <span className="extra-icon">{potatoes ? <Minus size={15} /> : <Plus size={15} />}</span>
-              <span>أضف 4 قطع بطاطس</span>
-              <strong>+15 ج.م</strong>
-            </button>
-            <div className="order-total"><span>الإجمالي</span><strong>{total} <small>ج.م</small></strong></div>
-            <button className="order-submit" onClick={sendOrder}>
-              <Send size={18} /> إرسال الطلب عبر واتساب
-            </button>
-            <p className="order-note">هتضيف اسمك وعنوانك وميعادك في رسالة واتساب.</p>
+          <aside className="simple-summary" aria-label="ملخص طلبك">
+            <div className="summary-photo"><img src={detailImage} alt="طبق من ورق العنب المحشي" /></div>
+            <div className="summary-label"><span>طلبك</span><ShoppingBag size={18} /></div>
+            <div className="summary-row"><span>{productName}</span><strong>{selectedItem.title}</strong></div>
+            <div className="summary-row"><span>الطعم</span><strong>{flavor}</strong></div>
+            {potatoes && <div className="summary-row"><span>إضافة بطاطس</span><strong>+15 ج.م</strong></div>}
+            <div className="summary-total"><span>الإجمالي</span><strong>{total} <small>ج.م</small></strong></div>
+            <button className="order-submit" onClick={sendOrder}><Send size={18} /> أرسل طلبي على واتساب</button>
+            <p>بعد الضغط هتكتب اسمك وعنوانك وميعادك.</p>
           </aside>
         </div>
       </section>
 
-      <section className="process-section section-pad" aria-labelledby="process-title">
-        <div className="process-title-wrap">
-          <div className="section-index">03 <span>/</span> الطلب بسيط</div>
-          <h2 id="process-title">من اختياره<br />لحد <em>أول لقمة.</em></h2>
-        </div>
-        <div className="process-list">
-          <article>
-            <span>01</span>
-            <div><h3>اختار طلبك</h3><p>حدد الكمية والطعم والإضافات من المنيو.</p></div>
-            <Leaf size={23} />
-          </article>
-          <article>
-            <span>02</span>
-            <div><h3>ابعت على واتساب</h3><p>رسالة مرتبة فيها تفاصيل طلبك وعنوانك.</p></div>
-            <MessageCircle size={23} />
-          </article>
-          <article>
-            <span>03</span>
-            <div><h3>نلفّه ونوصله</h3><p>يتجهز طازج ويتوصل لبيتك في القاهرة.</p></div>
-            <ShoppingBag size={23} />
-          </article>
-        </div>
+      <section id="delivery" className="delivery-strip" aria-labelledby="delivery-title">
+        <div className="delivery-mark"><img src={brandMark} alt="" /></div>
+        <div><p>التوصيل</p><h2 id="delivery-title">من مطبخنا <em>لبيتك.</em></h2></div>
+        <div className="delivery-points"><span><MapPin size={18} /> القاهرة — المناطق تضاف قبل الإطلاق</span><span><Clock size={18} /> تجهيز مسبق حسب الطلب</span></div>
+        <button className="light-cta" onClick={sendOrder}>اطلب الآن <ArrowLeft size={17} /></button>
       </section>
 
-      <section id="delivery" className="delivery-section" aria-labelledby="delivery-title">
-        <div className="delivery-photo">
-          <img src={tableImage} alt="مائدة منزلية عليها ورق عنب وليمون" />
-        </div>
-        <div className="delivery-copy">
-          <div className="section-index light">04 <span>/</span> التوصيل</div>
-          <h2 id="delivery-title">غداك جاهز،<br /><em>بس قول لنا فين.</em></h2>
-          <p>استقبل طلباتك على واتساب، واكتب المنطقة والموعد المناسب. تفاصيل مناطق ورسوم التوصيل هتتضاف هنا قبل الإطلاق.</p>
-          <div className="delivery-info">
-            <span><MapPin size={19} /> القاهرة — تفاصيل المناطق قريبًا</span>
-            <span><Clock size={19} /> تجهيز مسبق حسب الطلب</span>
-          </div>
-          <button className="light-cta" onClick={sendOrder}>ابدأ طلبك <ArrowLeft size={18} /></button>
-        </div>
-      </section>
-
-      <section className="feedback-section section-pad" aria-labelledby="feedback-title">
-        <div className="feedback-mark"><img src={brandMark} alt="" /></div>
+      <section id="contact" className="contact-section" aria-labelledby="contact-title">
         <div>
-          <p className="mini-label">بعد التجربة</p>
-          <h2 id="feedback-title">كلامكم <em>يفرق.</em></h2>
-          <p className="body-copy">التقييمات الحقيقية هنعرضها هنا لما تشاركونا تجربتكم. ابعتولنا رأيكم على Instagram أو واتساب.</p>
+          <div className="section-index">02 <span>/</span> تواصل</div>
+          <h2 id="contact-title">تابعنا وخليك<br /><em>قريب من الجديد.</em></h2>
         </div>
-        <a className="instagram-link" href="https://www.instagram.com/delicious_grape_leaves94/" target="_blank" rel="noreferrer">
-          <Instagram size={20} />
-          <span>@delicious_grape_leaves94</span>
-          <ArrowLeft size={17} />
-        </a>
+        <div className="social-links">
+          <a href="https://www.instagram.com/delicious_grape_leaves94/" target="_blank" rel="noreferrer"><Instagram size={22} /><span>Instagram</span><small>@delicious_grape_leaves94</small><ArrowLeft size={17} /></a>
+          <button onClick={openTikTok}><Music2 size={22} /><span>TikTok</span><small>أضف الرابط لاحقًا</small><ArrowLeft size={17} /></button>
+          <button onClick={sendOrder}><MessageCircle size={22} /><span>WhatsApp</span><small>لطلباتك واستفساراتك</small><ArrowLeft size={17} /></button>
+        </div>
       </section>
 
       <footer className="site-footer">
-        <a className="brand-lockup footer-brand" href="#top" aria-label="العودة إلى بداية الصفحة">
-          <img src={brandMark} alt="رمز ورقة عنب مطوية" className="brand-mark" />
-          <span><strong>ورق العنب</strong><em>اللذيذ</em></span>
-        </a>
+        <a className="brand-lockup footer-brand" href="#top" aria-label="العودة إلى بداية الصفحة"><img src={brandMark} alt="رمز ورقة عنب مطوية" className="brand-mark" /><span><strong>ورق العنب</strong><em>اللذيذ</em></span></a>
         <p>من مطبخنا لبيتك في القاهرة.</p>
-        <div className="footer-links">
-          <a href="https://www.instagram.com/delicious_grape_leaves94/" target="_blank" rel="noreferrer">Instagram</a>
-          <button onClick={sendOrder}>WhatsApp</button>
-        </div>
+        <button onClick={sendOrder}>واتساب الطلبات</button>
       </footer>
     </main>
   );
