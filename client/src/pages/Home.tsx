@@ -42,7 +42,7 @@ const fattaPortions: MenuItem[] = [
   { id: "fatta-large", title: "فتة كبيرة", description: "للمشاركة واللمة", price: 300, category: "فتة ورق عنب", tag: "مناسبة للّمة" },
 ];
 
-const flavors = ["عادي", "حامض", "سبايسي", "ليمون زيادة"];
+const orderTypes = ["عادي", "حار", "حامض"];
 
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -50,7 +50,7 @@ function scrollToSection(id: string) {
 
 export default function Home() {
   const [quantities, setQuantities] = useState<Record<string, number>>({ "30": 1 });
-  const [flavor, setFlavor] = useState("عادي");
+  const [orderType, setOrderType] = useState("عادي");
   const [potatoesCount, setPotatoesCount] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -69,8 +69,8 @@ export default function Home() {
   };
 
   const orderMessage = `أهلًا، أريد طلب من ورق العنب اللذيذ:\n` +
+    `• نوع الطلب: ${orderType}\n` +
     cartItems.map((item) => `• ${item.category} — ${item.title} × ${item.quantity} = ${item.subtotal} ج.م`).join("\n") +
-    `\n• الطعم: ${flavor}` +
     (potatoesCount ? `\n• بطاطس: ${potatoesCount} × 4 قطع = ${extrasTotal} ج.م` : "") +
     `\n• الإجمالي النهائي: ${total} ج.م\n\n` +
     `الاسم:\nالعنوان والمنطقة:\nالموعد المناسب:`;
@@ -118,18 +118,18 @@ export default function Home() {
       </div>}
 
       <section id="top" className="hero-section" aria-labelledby="hero-title">
-        <div className="hero-copy"><div className="eyebrow"><Sparkles size={15} /> ورق عنب منزلي في القاهرة</div><h1 id="hero-title">لفّة متظبطة.<span>قعدة مبسوطة.</span></h1><p>اختار الطعم، والأحجام، والعدد اللي يناسبك — والإجمالي يبان فورًا.</p><div className="hero-actions"><button className="primary-cta" onClick={() => scrollToSection("order")}>اطلب من المنيو <ArrowLeft size={18} /></button><span className="hero-note"><Leaf size={16} /> طازج عند الطلب</span></div></div>
+          <div className="hero-copy"><div className="eyebrow"><Sparkles size={15} /> ورق عنب منزلي في القاهرة</div><h1 id="hero-title">لفّة متظبطة.<span>قعدة مبسوطة.</span></h1><p>اختار النوع أولًا، ثم الأحجام والعدد اللي يناسبك — والإجمالي يبان فورًا.</p><div className="hero-actions"><button className="primary-cta" onClick={() => scrollToSection("order")}>اطلب من المنيو <ArrowLeft size={18} /></button><span className="hero-note"><Leaf size={16} /> طازج عند الطلب</span></div></div>
         <div className="hero-visual" aria-label="صينية ورق عنب طازج"><div className="hero-image-wrap"><img src={heroImage} alt="صينية ورق عنب محضرة طازجة بالليمون" /></div><div className="hero-sticker"><span>01</span><small>اختيار اليوم</small></div><div className="hero-side-note">طعم بيتي<br />بشكل جديد</div></div>
       </section>
 
       <section id="order" className="order-section" aria-labelledby="order-title">
-        <div className="order-intro"><div><div className="section-index">01 <span>/</span> المنيو</div><h2 id="order-title">اطلبها <em>على مزاجك.</em></h2></div><p>ابدأ بالطعم، ثم اختار أي حجم وعدده. الإجمالي موجود في بطاقة صغيرة جنبك.</p></div>
+        <div className="order-intro"><div><div className="section-index">01 <span>/</span> المنيو</div><h2 id="order-title">اطلبها <em>على مزاجك.</em></h2></div><p>ابدأ بتحديد النوع، ثم اختار أي حجم وعدده. الإجمالي موجود في بطاقة صغيرة جنبك.</p></div>
 
         <div className="order-layout compact-menu-layout">
           <div className="steps-area compact-menu">
             <div className="choice-step flavor-first">
-              <div className="step-heading"><span>1</span><div><small>أولًا</small><h3>تحبها إزاي؟</h3></div></div>
-              <div className="flavor-row">{flavors.map((item) => <button key={item} className={flavor === item ? "active" : ""} onClick={() => setFlavor(item)}>{item}</button>)}</div>
+              <div className="step-heading"><span>1</span><div><small>أولًا</small><h3>حدد نوع الطلب</h3></div></div>
+              <div className="flavor-row">{orderTypes.map((item) => <button key={item} className={orderType === item ? "active" : ""} onClick={() => setOrderType(item)}>{item}</button>)}</div>
             </div>
 
             <div className="choice-step last-step unified-menu-step">
@@ -153,6 +153,7 @@ export default function Home() {
 
           <aside className="compact-summary" aria-label="الإجمالي">
             <div className="compact-summary-head"><span>إجمالي الطلب</span><ShoppingBag size={17} /></div>
+            <div className="compact-order-type"><span>نوع الطلب</span><strong>{orderType}</strong></div>
             {cartItems.length ? <div className="compact-summary-items">{cartItems.map((item) => <div key={item.id}><span>{item.title} <small>× {item.quantity}</small></span><strong>{item.subtotal} ج.م</strong></div>)}{potatoesCount > 0 && <div><span>بطاطس <small>× {potatoesCount}</small></span><strong>{extrasTotal} ج.م</strong></div>}</div> : <p className="compact-empty">اختار حجمك من المربعات.</p>}
             <div className="compact-total"><span>الإجمالي</span><strong>{total} <small>ج.م</small></strong></div>
             <button className="compact-submit" onClick={sendOrder}><Send size={16} /> إرسال الطلب</button>

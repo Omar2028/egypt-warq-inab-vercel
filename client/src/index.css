@@ -291,6 +291,9 @@ img { display:block; max-width:100%; }
 .portion-card p strong { color:var(--clay); font-size:.61rem; white-space:nowrap; }
 .compact-summary { position:sticky; top:1.2rem; overflow:hidden; background:var(--ink); color:#fffdf7; box-shadow:8px 10px 0 var(--clay-soft); }
 .compact-summary-head { display:flex; align-items:center; justify-content:space-between; padding:.85rem .95rem; border-bottom:1px solid rgba(255,255,255,.15); color:#e2ebe2; font-size:.78rem; }
+.compact-order-type { display:flex; align-items:center; justify-content:space-between; padding:.55rem .95rem; background:rgba(120,152,131,.18); border-bottom:1px solid rgba(255,255,255,.12); }
+.compact-order-type span { color:#cbd8cd; font-size:.67rem; }
+.compact-order-type strong { color:#f2bba7; font-family:var(--font-display); font-size:1.05rem; }
 .compact-summary-items { display:grid; }
 .compact-summary-items > div { display:flex; align-items:baseline; justify-content:space-between; gap:.5rem; padding:.48rem .95rem; border-bottom:1px solid rgba(255,255,255,.12); }
 .compact-summary-items span { color:#d7e0d8; font-size:.68rem; }
