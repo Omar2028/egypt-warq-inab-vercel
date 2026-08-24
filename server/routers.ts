@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { archiveProduct, createProduct, listCustomerReviewImages, listProducts, listSettings, listSiteImages, setSiteSetting, updateProduct } from "./db";
+import { archiveProduct, createProduct, deleteCustomerReviewImage, deleteSiteImage, deleteSiteSetting, listCustomerReviewImages, listProducts, listSettings, listSiteImages, setSiteSetting, updateCustomerReviewImage, updateProduct } from "./db";
 import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 import { systemRouter } from "./_core/systemRouter";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -33,9 +33,10 @@ export const appRouter = router({
     settings: router({
       list: adminProcedure.query(() => listSettings()),
       save: adminProcedure.input(z.object({ key: z.string().min(1).max(128), group: z.string().min(1).max(64), value: z.string() })).mutation(({ ctx, input }) => setSiteSetting(input.key, input.group, input.value, ctx.user.id)),
+      reset: adminProcedure.input(z.object({ key: z.string().min(1).max(128) })).mutation(({ input }) => deleteSiteSetting(input.key)),
     }),
-    images: router({ list: adminProcedure.query(() => listSiteImages()) }),
-    reviews: router({ list: adminProcedure.query(() => listCustomerReviewImages(false)) }),
+    images: router({ list: adminProcedure.query(() => listSiteImages()), remove: adminProcedure.input(z.object({ slot: z.string().min(1).max(128) })).mutation(({ input }) => deleteSiteImage(input.slot)) }),
+    reviews: router({ list: adminProcedure.query(() => listCustomerReviewImages(false)), update: adminProcedure.input(z.object({ id: z.number().int().positive(), isVisible: z.boolean().optional(), sortOrder: z.number().int().min(0).optional() })).mutation(({ input }) => updateCustomerReviewImage(input.id, { isVisible: input.isVisible, sortOrder: input.sortOrder })), remove: adminProcedure.input(z.object({ id: z.number().int().positive() })).mutation(({ input }) => deleteCustomerReviewImage(input.id)) }),
   }),
 });
 export type AppRouter = typeof appRouter;
