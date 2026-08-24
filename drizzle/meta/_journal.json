@@ -8,6 +8,13 @@
       "when": 1787532739525,
       "tag": "0000_wooden_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1787536008119,
+      "tag": "0001_glorious_cloak",
+      "breakpoints": true
     }
   ]
 }

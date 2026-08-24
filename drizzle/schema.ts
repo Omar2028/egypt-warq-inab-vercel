@@ -59,9 +59,26 @@ export const siteImages = mysqlTable("site_images", {
   updatedBy: int("updatedBy"),
 });
 
+/** Customer-provided review screenshots uploaded by the owner; no invented review text is stored. */
+export const customerReviewImages = mysqlTable("customer_review_images", {
+  id: int("id").autoincrement().primaryKey(),
+  labelAr: varchar("labelAr", { length: 255 }).notNull(),
+  altAr: varchar("altAr", { length: 255 }),
+  storageKey: varchar("storageKey", { length: 512 }).notNull(),
+  url: varchar("url", { length: 1024 }).notNull(),
+  mimeType: varchar("mimeType", { length: 128 }).notNull(),
+  sizeBytes: int("sizeBytes").notNull(),
+  sortOrder: int("sortOrder").notNull().default(0),
+  isVisible: boolean("isVisible").notNull().default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  updatedBy: int("updatedBy"),
+}, table => [index("review_images_public_idx").on(table.isVisible, table.sortOrder)]);
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
 export type SiteSetting = typeof siteSettings.$inferSelect;
 export type SiteImage = typeof siteImages.$inferSelect;
+export type CustomerReviewImage = typeof customerReviewImages.$inferSelect;

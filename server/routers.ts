@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { archiveProduct, createProduct, listProducts, listSettings, listSiteImages, setSiteSetting, updateProduct } from "./db";
+import { archiveProduct, createProduct, listCustomerReviewImages, listProducts, listSettings, listSiteImages, setSiteSetting, updateProduct } from "./db";
 import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 import { systemRouter } from "./_core/systemRouter";
 import { getSessionCookieOptions } from "./_core/cookies";
@@ -20,9 +20,10 @@ export const appRouter = router({
     products: publicProcedure.query(() => listProducts(true)),
     settings: publicProcedure.query(() => listSettings()),
     images: publicProcedure.query(() => listSiteImages()),
+    reviewImages: publicProcedure.query(() => listCustomerReviewImages(true)),
   }),
   admin: router({
-    dashboard: adminProcedure.query(async () => ({ products: await listProducts(false), settings: await listSettings(), images: await listSiteImages() })),
+    dashboard: adminProcedure.query(async () => ({ products: await listProducts(false), settings: await listSettings(), images: await listSiteImages(), reviewImages: await listCustomerReviewImages(false) })),
     products: router({
       list: adminProcedure.query(() => listProducts(false)),
       create: adminProcedure.input(productSchema).mutation(({ input }) => createProduct(input)),
@@ -34,6 +35,7 @@ export const appRouter = router({
       save: adminProcedure.input(z.object({ key: z.string().min(1).max(128), group: z.string().min(1).max(64), value: z.string() })).mutation(({ ctx, input }) => setSiteSetting(input.key, input.group, input.value, ctx.user.id)),
     }),
     images: router({ list: adminProcedure.query(() => listSiteImages()) }),
+    reviews: router({ list: adminProcedure.query(() => listCustomerReviewImages(false)) }),
   }),
 });
 export type AppRouter = typeof appRouter;
