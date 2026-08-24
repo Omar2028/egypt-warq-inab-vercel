@@ -17,8 +17,7 @@ const orderTypes = ["عادي", "حار"];
 const menuItems: MenuItem[] = [
   { id: "20", title: "20 حبة", description: "لشخصين أو مزاجك لوحدك", price: 150, category: "ورق عنب" },
   { id: "30", title: "30 حبة", description: "للقعدة الصغيرة", price: 195, category: "ورق عنب" },
-  { id: "50", title: "50 حبة", description: "الأكثر طلبًا", price: 335, category: "ورق عنب", tag: "الأكثر طلبًا" },
-  { id: "kilo", title: "كيلو ورق عنب", description: "يعادل تقريبًا 50 حبة", price: 335, category: "ورق عنب", tag: "نفس سعر 50 حبة" },
+  { id: "50", title: "50 حبة / كيلو", description: "يعادل تقريبًا كيلو ورق عنب", price: 335, category: "ورق عنب", tag: "الأكثر طلبًا" },
   { id: "80", title: "80 حبة", description: "للمة الحلوة", price: 500, category: "ورق عنب" },
   { id: "100", title: "100 حبة", description: "للعزومات", price: 600, category: "ورق عنب" },
   { id: "fatta-small", title: "فتة صغيرة", description: "طبق فردي متكامل", price: 150, category: "فتة" },
