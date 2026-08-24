@@ -1,0 +1,7 @@
+.edit-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.edit-card{padding:1rem;border:1px solid #dfdbcf;background:#fffdf8;box-shadow:3px 4px 0 #ece3d1}
+.edit-card h4{margin:0 0 .75rem;color:#18372d}
+.edit-card label{display:grid;gap:.35rem;margin-bottom:.65rem;font-size:.78rem;color:#56705e}
+.edit-card input,.edit-card textarea{width:100%;padding:.65rem;border:1px solid #d8d3c5;background:#fff}
+.edit-card img{width:100%;height:160px;object-fit:cover;border:1px solid #dfdbcf}
+@media(max-width:800px){.edit-card-grid{grid-template-columns:1fr}}

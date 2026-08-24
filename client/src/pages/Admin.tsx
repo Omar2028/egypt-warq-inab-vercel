@@ -4,6 +4,7 @@ import { Eye, EyeOff, ImageUp, LogOut, PackagePlus, Save, Trash2 } from "lucide-
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import "./Admin.css";
+import "./AdminCards.css";
 
 const blankProduct = { slug: "", nameAr: "", nameEn: "", descriptionAr: "", descriptionEn: "", category: "ورق عنب", price: 0, currency: "EGP", sortOrder: 0, isVisible: true, isArchived: false };
 
