@@ -36,7 +36,7 @@ export const appRouter = router({
       reset: adminProcedure.input(z.object({ key: z.string().min(1).max(128) })).mutation(({ input }) => deleteSiteSetting(input.key)),
     }),
     images: router({ list: adminProcedure.query(() => listSiteImages()), remove: adminProcedure.input(z.object({ slot: z.string().min(1).max(128) })).mutation(({ input }) => deleteSiteImage(input.slot)) }),
-    reviews: router({ list: adminProcedure.query(() => listCustomerReviewImages(false)), update: adminProcedure.input(z.object({ id: z.number().int().positive(), isVisible: z.boolean().optional(), sortOrder: z.number().int().min(0).optional() })).mutation(({ input }) => updateCustomerReviewImage(input.id, { isVisible: input.isVisible, sortOrder: input.sortOrder })), remove: adminProcedure.input(z.object({ id: z.number().int().positive() })).mutation(({ input }) => deleteCustomerReviewImage(input.id)) }),
+    reviews: router({ list: adminProcedure.query(() => listCustomerReviewImages(false)), update: adminProcedure.input(z.object({ id: z.number().int().positive(), isVisible: z.boolean().optional(), sortOrder: z.number().int().min(0).optional() })).mutation(({ input }) => updateCustomerReviewImage(input.id, { isVisible: input.isVisible, sortOrder: input.sortOrder })), reorder: adminProcedure.input(z.object({ ids: z.array(z.number().int().positive()).min(1) })).mutation(async ({ input }) => Promise.all(input.ids.map((id, sortOrder) => updateCustomerReviewImage(id, { sortOrder })))), remove: adminProcedure.input(z.object({ id: z.number().int().positive() })).mutation(({ input }) => deleteCustomerReviewImage(input.id)) }),
   }),
 });
 export type AppRouter = typeof appRouter;
