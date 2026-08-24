@@ -45,7 +45,7 @@ export default function Home() {
   const orderTypes = [copy("order.typeNormal", "عادي"), copy("order.typeSpicy", "حار")];
   const heroMain = copy("home.title.primary", "لفّة متظبطة.");
   const heroAccent = copy("home.title.accent", "قعدة مبسوطة.");
-  const heroDescription = copy("home.description", "اختار نوع ورق العنب، ثم زِد العدد جنب كل صنف — والإجمالي يبان فورًا.");
+  const heroDescription = copy("home.description", "اختار نوع ورق العنب، ثم زِد العدد جنب كل صنف.");
   const heroPhoto = images["hero-main"] || heroImage;
   const cartItems = useMemo(() => displayMenuItems.flatMap((item) => {
     const types = item.category === "ورق عنب" ? orderTypes : ["بدون نوع"];
@@ -59,7 +59,7 @@ export default function Home() {
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const changeQuantity = (cartKey: string, amount: number) => setQuantities((current) => ({ ...current, [cartKey]: Math.max(0, Math.min(99, (current[cartKey] ?? 0) + amount)) }));
-  const orderMessage = `أهلًا، أريد طلب من ورق العنب اللذيذ:\n` + cartItems.map((item) => `• ${item.category} — ${item.title}${item.itemType ? ` (${item.itemType})` : ""} × ${item.quantity} = ${item.subtotal} ج.م`).join("\n") + `\n• الإجمالي النهائي: ${total} ج.م\n\nالاسم:\nالعنوان والمنطقة:\nالموعد المناسب:`;
+  const orderMessage = `${copy("order.messageIntro", "أهلًا، أريد طلب من ورق العنب اللذيذ:")}\n` + cartItems.map((item) => `• ${item.category} — ${item.title}${item.itemType ? ` (${item.itemType})` : ""} × ${item.quantity} = ${item.subtotal} ج.م`).join("\n") + `\n• ${copy("order.totalLabel", "الإجمالي النهائي")}: ${total} ج.م\n\n${copy("order.customerNameLabel", "الاسم")}:\n${copy("order.locationLabel", "اللوكيشن (رابط Google Maps أو مشاركة الموقع)")}:\n${copy("order.buildingLabel", "رقم العمارة")}:\n${copy("order.floorLabel", "الدور")}:\n${copy("order.apartmentLabel", "الشقة")}:\n\n${copy("order.confirmationNotice", "لتأكيد الطلب لازم المعلومات كاملة.")}`;
   const sendOrder = () => { if (!cartItems.length) { toast.error("زِد العدد بجانب صنف واحد على الأقل قبل إرسال الطلب."); return; } if (!whatsappNumber) { toast.info("سيضاف رقم واتساب الطلبات من لوحة الإدارة قبل الإطلاق."); return; } window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(orderMessage)}`, "_blank", "noopener,noreferrer"); };
   const openTikTok = () => { if (!tiktokUrl) { toast.info("سيضاف رابط TikTok من لوحة الإدارة قبل الإطلاق."); return; } window.open(tiktokUrl, "_blank", "noopener,noreferrer"); };
   const openInquiry = () => { if (!whatsappNumber) { toast.info("سيضاف رقم واتساب التواصل من لوحة الإدارة قبل الإطلاق."); return; } window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("أهلًا، أريد الاستفسار عن ورق العنب اللذيذ.")}`, "_blank", "noopener,noreferrer"); };
