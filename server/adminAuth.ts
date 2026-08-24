@@ -15,6 +15,7 @@ type GoogleConfig = { clientId: string; clientSecret: string; redirectUri: strin
 type GoogleClaims = { sub: string; email: string; email_verified: boolean; name?: string };
 
 function normalized(value: string) { return value.trim().toLowerCase(); }
+export function isAuthorizedAdminEmail(email: string, adminEmail: string) { return normalized(email) === normalized(adminEmail); }
 function isSecureRequest(req: Request) {
   const forwarded = req.headers["x-forwarded-proto"];
   const forwardedValue = Array.isArray(forwarded) ? forwarded[0] : forwarded;
@@ -74,7 +75,7 @@ export async function completeGoogleAdminLogin(req: Request, res: Response) {
 
   const verified = await jwtVerify(tokens.id_token, GOOGLE_JWKS, { audience: config.clientId, issuer: ["https://accounts.google.com", "accounts.google.com"] });
   const claims = verified.payload as unknown as GoogleClaims;
-  if (!claims.sub || !claims.email || claims.email_verified !== true || normalized(claims.email) !== config.adminEmail) throw new Error("Unauthorized Google account.");
+  if (!claims.sub || !claims.email || claims.email_verified !== true || !isAuthorizedAdminEmail(claims.email, config.adminEmail)) throw new Error("Unauthorized Google account.");
 
   const openId = `google:${claims.sub}`;
   await upsertUser({ openId, name: claims.name ?? null, email: claims.email, loginMethod: "google", role: "admin", lastSignedIn: new Date() });
