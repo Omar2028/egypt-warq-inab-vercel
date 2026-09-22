@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express from "express";
+import express, { type Express } from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -21,26 +21,33 @@ function isPortAvailable(port: number): Promise<boolean> {
   });
 }
 
-async function findAvailablePort(startPort: number = 3000): Promise<number> {
+async function findAvailablePort(startPort = 3000): Promise<number> {
   for (let port = startPort; port < startPort + 20; port++) {
-    if (await isPortAvailable(port)) {
-      return port;
-    }
+    if (await isPortAvailable(port)) return port;
   }
   throw new Error(`No available port found starting from ${startPort}`);
 }
 
-async function startServer() {
+type CreateAppOptions = {
+  serveStaticFiles?: boolean;
+};
+
+/**
+ * Creates the application without starting a listener. This is required by
+ * Vercel Serverless Functions, while the local Manus server starts its own
+ * HTTP listener below.
+ */
+export function createApp(options: CreateAppOptions = {}): Express {
   const app = express();
-  const server = createServer(app);
-  // Configure body parser with larger size limit for file uploads
+
+  // Configure body parser with a larger limit for image uploads.
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   registerAdminRoutes(app);
   registerAdminUploadRoutes(app);
-  // tRPC API
+
   app.use(
     "/api/trpc",
     createExpressMiddleware({
@@ -48,14 +55,22 @@ async function startServer() {
       createContext,
     })
   );
-  // development mode uses Vite, production mode uses static files
+
+  if (options.serveStaticFiles) serveStatic(app);
+  return app;
+}
+
+async function startServer() {
+  const app = createApp();
+  const server = createServer(app);
+
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
+  const preferredPort = parseInt(process.env.PORT || "3000", 10);
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
@@ -67,4 +82,7 @@ async function startServer() {
   });
 }
 
-startServer().catch(console.error);
+// Vercel imports createApp through api/index.ts and must not start a listener.
+if (!process.env.VERCEL) {
+  startServer().catch(console.error);
+}
