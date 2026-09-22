@@ -7,5 +7,27 @@
     "api/index.ts": {
       "maxDuration": 60
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/manus-storage/:path*",
+      "destination": "/api"
+    },
+    {
+      "source": "/admin",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/prototype",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/404",
+      "destination": "/index.html"
+    }
+  ]
 }
