@@ -1,20 +1,50 @@
-/**
- * Design note — «مطبخ على الورق»: a warm editorial page with one direct menu,
- * where the customer selects the grape-leaf type once and quantities beside every item.
- */
 import { useMemo, useState } from "react";
-import { ArrowLeft, Check, Clock, Instagram, Leaf, MapPin, Menu, MessageCircle, Minus, Music2, Plus, Send, ShoppingBag, Sparkles, X } from "lucide-react";
+import {
+  Clock,
+  CreditCard,
+  Instagram,
+  Leaf,
+  MapPin,
+  Menu,
+  MessageCircle,
+  Minus,
+  Music2,
+  Plus,
+  Send,
+  ShoppingBag,
+  Store,
+  Truck,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import "./home-redesign.css";
 
 const WHATSAPP_NUMBER = "201141672769";
 const TIKTOK_URL = "https://www.tiktok.com/@delicious_grape_leaves";
-const heroImage = "/manus-storage/delicious-grape-leaves-hero_9c69dcdc.jpg";
-const brandMark = "/manus-storage/delicious-grape-leaves-mark_7ed4eb45.png";
 
-type MenuItem = { id: string; title: string; description: string; price: number; category: "ورق عنب" | "فتة" | "إضافة"; tag?: string };
-const orderTypes = ["عادي", "حار"];
-const menuItems: MenuItem[] = [
+const brandLogo = "/brand/cairo/logo.jpeg";
+const foodPhotos = [
+  "/brand/cairo/grape-leaves-spicy.jpeg",
+  "/brand/cairo/grape-leaves-pomegranate.jpeg",
+  "/brand/cairo/grape-leaves-trays.jpeg",
+  "/brand/cairo/grape-leaves-close.jpeg",
+  "/brand/cairo/grape-leaves-pour.jpeg",
+  "/brand/cairo/grape-leaves-limes.jpeg",
+  "/brand/cairo/grape-leaves-hand.jpeg",
+  "/brand/cairo/grape-leaves-pot.jpeg",
+];
+
+type MenuItem = {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: "ورق عنب" | "فتة" | "إضافة";
+  tag?: string;
+};
+
+const fallbackMenuItems: MenuItem[] = [
   { id: "20", title: "20 حبة", description: "لشخصين أو مزاجك لوحدك", price: 150, category: "ورق عنب" },
   { id: "30", title: "30 حبة", description: "للقعدة الصغيرة", price: 195, category: "ورق عنب" },
   { id: "50", title: "50 حبة / كيلو", description: "يعادل تقريبًا كيلو ورق عنب", price: 335, category: "ورق عنب", tag: "الأكثر طلبًا" },
@@ -25,57 +55,387 @@ const menuItems: MenuItem[] = [
   { id: "potatoes", title: "4 قطع بطاطس", description: "إضافة على طلبك", price: 15, category: "إضافة" },
 ];
 
-function scrollToSection(id: string) { document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+const customerReviews = [
+  "لذيذذذ مره فتحته على طول يعطيك الف عافيه و عجب خالتي مررره تسلم يددددك\nماراح يكون اخر تعامل باذن الله\nبعطيها رقمك و نعتمد مانجيب الا منك",
+  "تسلم يدك حبيبتي يجننن الورق عنب صدق كنت ادور ورق عنب نفس حق السعوديه و لقيتك بالصدفه\nشكراً الله يرزقك يارب ❤️❤️",
+  "يعطيك العاااافية ❤️❤️❤️\nالذ ورق عنب جربته بمصر ❤️❤️",
+  "الورق العنب كان خياااالي تبارك الرحمن ولذيذ وفيه بنات اخذو مني حسابك عجبهم 😍❤️",
+  "ايش ورق العنب هذاااااااا؟؟؟؟؟؟؟ كل مره اطعم من الي قبلها!! لذيذذذ مررره تسلم اناملك ❤️❤️❤️❤️❤️",
+  "لذيييييذ لذذسييييد ما شاء الله 😭 ولا غلطه ما شاء الله والكميه تفتح النفس تسلم الايادي\nوبإذن الله نطلب مره ثانيه يجنن 💗💗💗💗",
+  "روووووعه\nقسم بالله\nبله\nعادي طعمت بس من العادي فضيع\nقالت لزم اقولك\nبجد دا ورق عنب والله يييييييجننننن يسلم يدك 🔥",
+];
+
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
 export default function Home() {
   const managedProducts = trpc.publicSite.products.useQuery();
   const managedSettings = trpc.publicSite.settings.useQuery();
-  const managedImages = trpc.publicSite.images.useQuery();
-  const managedReviewImages = trpc.publicSite.reviewImages.useQuery();
+
   const [orderType, setOrderType] = useState("عادي");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [selectedReview, setSelectedReview] = useState<{ url: string; label: string; alt: string } | null>(null);
-  const settings = useMemo(() => Object.fromEntries((managedSettings.data ?? []).map(item => [item.key, item.value])), [managedSettings.data]);
-  const displayMenuItems = useMemo<MenuItem[]>(() => managedProducts.data?.length ? managedProducts.data.map(item => ({ id: String(item.id), title: item.nameAr, description: item.descriptionAr || "طلب طازج عند الطلب", price: item.price, category: item.category === "فتة" ? "فتة" : ["إضافة", "إضافات"].includes(item.category) ? "إضافة" : "ورق عنب", tag: item.options && typeof item.options === "object" && "tag" in item.options && typeof item.options.tag === "string" ? item.options.tag : undefined })) : menuItems, [managedProducts.data]);
+
+  const settings = useMemo<Record<string, string>>(
+    () => Object.fromEntries((managedSettings.data ?? []).map((item) => [item.key, item.value])),
+    [managedSettings.data],
+  );
+
+  const copy = (key: string, fallback: string) => settings[key] || fallback;
+
+  const displayMenuItems = useMemo<MenuItem[]>(
+    () =>
+      managedProducts.data?.length
+        ? managedProducts.data.map((item) => ({
+            id: String(item.id),
+            title: item.nameAr,
+            description: item.descriptionAr || "طلب طازج عند الطلب",
+            price: item.price,
+            category:
+              item.category === "فتة"
+                ? "فتة"
+                : ["إضافة", "إضافات"].includes(item.category)
+                  ? "إضافة"
+                  : "ورق عنب",
+            tag:
+              item.options &&
+              typeof item.options === "object" &&
+              "tag" in item.options &&
+              typeof item.options.tag === "string"
+                ? item.options.tag
+                : undefined,
+          }))
+        : fallbackMenuItems,
+    [managedProducts.data],
+  );
+
   const whatsappNumber = settings["contact.whatsapp"] || WHATSAPP_NUMBER;
   const tiktokUrl = settings["contact.tiktok"] || TIKTOK_URL;
-  const images = useMemo(() => Object.fromEntries((managedImages.data ?? []).map(image => [image.slot, image.url])), [managedImages.data]);
-  const copy = (key: string, fallback: string) => settings[key] || fallback;
   const orderTypes = [copy("order.typeNormal", "عادي"), copy("order.typeSpicy", "حار")];
-  const heroMain = copy("home.title.primary", "لفّة متظبطة.");
-  const heroAccent = copy("home.title.accent", "قعدة مبسوطة.");
-  const heroDescription = copy("home.description", "اختار نوع ورق العنب، ثم زِد العدد جنب كل صنف.");
-  const heroPhoto = images["hero-main"] || heroImage;
-  const cartItems = useMemo(() => displayMenuItems.flatMap((item) => {
-    const types = item.category === "ورق عنب" ? orderTypes : ["بدون نوع"];
-    return types.map((itemType) => {
-      const cartKey = item.category === "ورق عنب" ? `${item.id}::${itemType}` : item.id;
-      const quantity = quantities[cartKey] ?? 0;
-      return { ...item, itemType: item.category === "ورق عنب" ? itemType : null, cartKey, quantity, subtotal: item.price * quantity };
-    }).filter((item) => item.quantity > 0);
-  }), [displayMenuItems, quantities]);
+
+  const cartItems = useMemo(
+    () =>
+      displayMenuItems.flatMap((item) => {
+        const types = item.category === "ورق عنب" ? orderTypes : ["بدون نوع"];
+        return types
+          .map((itemType) => {
+            const cartKey = item.category === "ورق عنب" ? `${item.id}::${itemType}` : item.id;
+            const quantity = quantities[cartKey] ?? 0;
+            return {
+              ...item,
+              itemType: item.category === "ورق عنب" ? itemType : null,
+              cartKey,
+              quantity,
+              subtotal: item.price * quantity,
+            };
+          })
+          .filter((item) => item.quantity > 0);
+      }),
+    [displayMenuItems, orderTypes, quantities],
+  );
+
   const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  const changeQuantity = (cartKey: string, amount: number) => setQuantities((current) => ({ ...current, [cartKey]: Math.max(0, Math.min(99, (current[cartKey] ?? 0) + amount)) }));
-  const orderMessage = `${copy("order.messageIntro", "أهلًا، أريد طلب من ورق العنب اللذيذ:")}\n` + cartItems.map((item) => `• ${item.category} — ${item.title}${item.itemType ? ` (${item.itemType})` : ""} × ${item.quantity} = ${item.subtotal} ج.م`).join("\n") + `\n• ${copy("order.totalLabel", "الإجمالي النهائي")}: ${total} ج.م\n\n${copy("order.customerNameLabel", "الاسم")}:\n${copy("order.customerPhoneLabel", "رقم التواصل")}:\n${copy("order.locationLabel", "اللوكيشن (رابط Google Maps أو مشاركة الموقع)")}:\n${copy("order.buildingLabel", "رقم العمارة")}:\n${copy("order.floorLabel", "الدور")}:\n${copy("order.apartmentLabel", "الشقة")}:\n\n${copy("delivery.points", "نقاط التوصيل المتاحة: فيصل وأكتوبر")}\n\n${copy("order.confirmationNotice", "لتأكيد الطلب لازم المعلومات كاملة.")}`;
-  const sendOrder = () => { if (!cartItems.length) { toast.error("زِد العدد بجانب صنف واحد على الأقل قبل إرسال الطلب."); return; } if (!whatsappNumber) { toast.info("سيضاف رقم واتساب الطلبات من لوحة الإدارة قبل الإطلاق."); return; } window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(orderMessage)}`, "_blank", "noopener,noreferrer"); };
-  const openTikTok = () => { if (!tiktokUrl) { toast.info("سيضاف رابط TikTok من لوحة الإدارة قبل الإطلاق."); return; } window.open(tiktokUrl, "_blank", "noopener,noreferrer"); };
-  const openInquiry = () => { if (!whatsappNumber) { toast.info("سيضاف رقم واتساب التواصل من لوحة الإدارة قبل الإطلاق."); return; } window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent("أهلًا، أريد الاستفسار عن ورق العنب اللذيذ.")}`, "_blank", "noopener,noreferrer"); };
+  const changeQuantity = (cartKey: string, amount: number) =>
+    setQuantities((current) => ({
+      ...current,
+      [cartKey]: Math.max(0, Math.min(99, (current[cartKey] ?? 0) + amount)),
+    }));
 
-  return <main className="site-shell paper-grain" dir="rtl">
-    <header className="site-header" aria-label="التنقل الرئيسي"><a className="brand-lockup" href="#top" aria-label="الرئيسية"><img src={brandMark} alt="رمز ورقة عنب مطوية" className="brand-mark" /><span><strong>{copy("brand.primary", "ورق العنب")}</strong><em>{copy("brand.secondary", "اللذيذ")}</em></span></a><nav className="desktop-nav" aria-label="أقسام الموقع"><button onClick={() => scrollToSection("order")}>{copy("nav.menu", "المنيو")}</button><button onClick={() => scrollToSection("delivery")}>{copy("nav.delivery", "التوصيل")}</button><button onClick={() => scrollToSection("reviews")}>{copy("nav.reviews", "آراء العملاء")}</button><button onClick={() => scrollToSection("contact")}>{copy("nav.contact", "تواصل")}</button></nav><button className="header-order" onClick={sendOrder}><MessageCircle size={17} /> {copy("nav.order", "اطلب الآن")}</button><button className="mobile-menu-button" aria-label={isMenuOpen ? "إغلاق القائمة" : "فتح القائمة"} aria-expanded={isMenuOpen} onClick={() => setIsMenuOpen((open) => !open)}>{isMenuOpen ? <X size={23} /> : <Menu size={24} />}</button></header>
-    {isMenuOpen && <div className="mobile-menu" aria-label="قائمة الجوال">{[[copy("nav.menu", "المنيو"), "order"], [copy("nav.delivery", "التوصيل"), "delivery"], [copy("nav.contact", "تواصل"), "contact"]].map(([label, id]) => <button key={id} onClick={() => { setIsMenuOpen(false); scrollToSection(id); }}>{label}<ArrowLeft size={18} /></button>)}<button className="mobile-order" onClick={sendOrder}>{copy("mobile.order", "إرسال طلب عبر واتساب")}</button></div>}
+  const orderMessage =
+    `${copy("order.messageIntro", "أهلًا، أريد طلب من ورق العنب اللذيذ:")}\n` +
+    cartItems
+      .map(
+        (item) =>
+          `• ${item.category} — ${item.title}${item.itemType ? ` (${item.itemType})` : ""} × ${item.quantity} = ${item.subtotal} ج.م`,
+      )
+      .join("\n") +
+    `\n• ${copy("order.totalLabel", "الإجمالي النهائي")}: ${total} ج.م\n\n${copy("order.customerNameLabel", "الاسم")}:\n${copy("order.customerPhoneLabel", "رقم التواصل")}:\n${copy("order.locationLabel", "اللوكيشن (رابط Google Maps أو مشاركة الموقع)")}:\n${copy("order.buildingLabel", "رقم العمارة")}:\n${copy("order.floorLabel", "الدور")}:\n${copy("order.apartmentLabel", "الشقة")}:\n\n${copy("delivery.points", "نقاط التوصيل المتاحة: فيصل وأكتوبر")}\n\n${copy("order.confirmationNotice", "لتأكيد الطلب لازم المعلومات كاملة.")}`;
 
-    <section id="top" className="hero-section" aria-labelledby="hero-title"><div className="hero-copy"><div className="eyebrow"><Sparkles size={15} /> {copy("home.eyebrow", "ورق عنب منزلي في القاهرة")}</div><h1 id="hero-title">{heroMain}<span>{heroAccent}</span></h1><p>{heroDescription}</p><div className="hero-actions"><button className="primary-cta" onClick={() => scrollToSection("order")}>{copy("order.cta", "اطلب من المنيو")} <ArrowLeft size={18} /></button><span className="hero-note"><Leaf size={16} /> {copy("home.note", "طازج عند الطلب")}</span></div></div><div className="hero-visual" aria-label="صينية ورق عنب طازج"><div className="hero-image-wrap"><img src={heroPhoto} alt={copy("home.heroAlt", "صينية ورق عنب محضرة طازجة بالليمون")} /></div><div className="hero-sticker"><span>01</span><small>{copy("home.sticker", "اختيار اليوم")}</small></div><div className="hero-side-note">{copy("home.sideNote", "طعم بيتي بشكل جديد")}</div></div></section>
+  const sendOrder = () => {
+    if (!cartItems.length) {
+      toast.error("زِد العدد بجانب صنف واحد على الأقل قبل إرسال الطلب.");
+      return;
+    }
+    if (!whatsappNumber) {
+      toast.info("سيضاف رقم واتساب الطلبات من لوحة الإدارة قبل الإطلاق.");
+      return;
+    }
+    window.open(
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(orderMessage)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
 
-            <section id="order" className="order-section root-direct-section" aria-labelledby="order-title"><div className="order-intro"><div><div className="section-index">01 <span>/</span> {copy("order.sectionLabel", "المنيو")}</div><h2 id="order-title">{copy("order.title", "اطلبها")} <em>{copy("order.accent", "بسهولة.")}</em></h2></div><p>{copy("order.description", "اختر النوع أولًا، ثم أضف الصنف والعدد. يمكنك تبديل النوع وإضافة الصنف نفسه مجددًا.")}</p></div><div className="root-direct-shell"><div className="root-menu-flow"><section className="root-type-step"><div className="root-step-heading"><span>1</span><div><small>{copy("order.typeLead", "أولًا")}</small><h3>{copy("order.typeTitle", "حدد النوع الذي ستضيفه الآن")}</h3></div></div><div className="root-type-options" role="radiogroup" aria-label="نوع ورق العنب">{orderTypes.map((item) => <button key={item} role="radio" aria-checked={orderType === item} className={orderType === item ? "selected" : ""} onClick={() => setOrderType(item)}>{orderType === item && <Check size={14} />}{item}</button>)}</div></section><section className="root-items-step"><div className="root-step-heading"><span>2</span><div><small>{copy("order.itemsLead", "أضف بالعدد الذي تريده")}</small><h3>{copy("order.itemsTitle", "كل الأصناف في منيو واحد")}</h3></div></div><div className="root-menu-list">{displayMenuItems.map((item) => { const cartKey = item.category === "ورق عنب" ? `${item.id}::${orderType}` : item.id; const qty = quantities[cartKey] ?? 0; return <article key={`${item.id}-${orderType}`} className={`root-menu-row ${qty > 0 ? "selected" : ""}`}><div className="root-row-copy"><div><small>{item.category}</small>{item.tag && <b>{item.tag}</b>}</div><strong>{item.title}</strong><span>{item.description}{item.category === "ورق عنب" && <em> · {copy("order.selectedType", "النوع المضاف الآن")} : {orderType}</em>}</span></div><div className="root-row-price"><strong>{item.price}</strong><small>ج.م</small></div><div className="root-row-quantity"><button aria-label={`إنقاص ${item.title}`} onClick={() => changeQuantity(cartKey, -1)} disabled={qty === 0}><Minus size={15} /></button><output aria-label={`عدد ${item.title}`}>{qty}</output><button aria-label={`زيادة ${item.title}`} onClick={() => changeQuantity(cartKey, 1)}><Plus size={15} /></button></div></article>})}</div><p className="root-menu-note"><Clock size={15} /> {copy("order.typeNote", "بدّل بين عادي وحار ثم أضف الصنف نفسه مرة أخرى إن رغبت.")}</p></section></div><aside className="root-order-summary" aria-label="ملخص وإجمالي الطلب"><div className="compact-summary-head"><span>{copy("order.summaryTitle", "ملخص طلبك")}</span><ShoppingBag size={17} /></div>{cartItems.length ? <div className="root-summary-items">{cartItems.map((item) => <div key={item.cartKey}><span>{item.title}{item.itemType ? <small> · {item.itemType}</small> : null} <small>× {item.quantity}</small></span><strong>{item.subtotal} ج.م</strong></div>)}</div> : <p className="root-summary-empty">{copy("order.emptyCart", "اختر النوع ثم زِد العدد بجانب الصنف المطلوب.")}</p>}<div className="compact-total"><span>{copy("order.totalLabel", "الإجمالي النهائي")}</span><strong>{total} <small>ج.م</small></strong></div><button className="compact-submit" onClick={sendOrder}><Send size={16} /> {copy("order.submit", "إرسال الطلب")}</button><p>{copy("order.note", "سيظهر النوع والكميات في رسالة واتساب.")}</p></aside></div></section>
+  const openInquiry = () => {
+    if (!whatsappNumber) {
+      toast.info("سيضاف رقم واتساب التواصل من لوحة الإدارة قبل الإطلاق.");
+      return;
+    }
+    window.open(
+      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("أهلًا، أريد الاستفسار عن ورق العنب اللذيذ.")}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
 
-    <section id="delivery" className="delivery-strip" aria-labelledby="delivery-title"><div className="delivery-mark"><img src={brandMark} alt="" /></div><div><p>{copy("delivery.label", "التوصيل")}</p><h2 id="delivery-title">{copy("delivery.title", "من مطبخنا")} <em>{copy("delivery.accent", "لبيتك.")}</em></h2></div><div className="delivery-points"><span><MapPin size={18} /> {copy("delivery.areas", "توصيل لجميع أنحاء القاهرة")}</span><span><MapPin size={18} /> {copy("delivery.points", "نقاط التوصيل المتاحة: فيصل وأكتوبر")}</span><span><MapPin size={18} /> {copy("delivery.pickup", "استلام من الثلاثيني — فيصل")}</span><span><Clock size={18} /> {copy("delivery.prepTime", "يفضل الحجز قبل يوم حتى الساعة 12، أو حسب الكمية المتوفرة")}</span><span><Clock size={18} /> {copy("delivery.eta", "وقت التوصيل يختلف حسب المنطقة")}</span><span><MessageCircle size={18} /> {copy("payment.methods", "الدفع: كاش، فودافون كاش، أو إنستاباي")}</span></div><button className="light-cta" onClick={sendOrder}>{copy("delivery.cta", "اطلب الآن")} <ArrowLeft size={17} /></button></section>
-    <section id="reviews" className="contact-section" aria-labelledby="reviews-title"><div><div className="section-index">02 <span>/</span> {copy("reviews.label", "آراء العملاء")}</div><h2 id="reviews-title">{copy("reviews.title", "تجارب")} <em>{copy("reviews.accent", "من عملائنا.")}</em></h2></div><div className="image-grid">{managedReviewImages.data?.length ? managedReviewImages.data.map(review => <button type="button" className="review-image-button" key={review.id} onClick={() => setSelectedReview({ url: review.url, label: review.labelAr, alt: review.altAr || review.labelAr })}><img src={review.url} alt={review.altAr || review.labelAr} /><span>{review.labelAr} · {copy("reviews.read", "اضغط للقراءة")}</span></button>) : <p className="empty-admin">{copy("reviews.empty", "ستظهر هنا صور آراء العملاء التي تضيفها من لوحة المالك.")}</p>}</div></section>
-    {selectedReview && <div role="dialog" aria-modal="true" aria-label={selectedReview.label} onClick={() => setSelectedReview(null)} style={{ position: "fixed", inset: 0, zIndex: 50, display: "grid", placeItems: "center", padding: "1rem", background: "rgba(15, 35, 28, .78)" }}><div onClick={(event) => event.stopPropagation()} style={{ position: "relative", maxWidth: "min(960px, 96vw)", maxHeight: "92vh", overflow: "auto", padding: ".65rem", background: "#fffdf8" }}><button type="button" aria-label="إغلاق صورة الرأي" onClick={() => setSelectedReview(null)} style={{ position: "absolute", top: ".8rem", left: ".8rem", display: "grid", placeItems: "center", width: "2.25rem", height: "2.25rem", borderRadius: "50%", background: "#18372d", color: "white" }}><X size={18} /></button><img src={selectedReview.url} alt={selectedReview.alt} style={{ display: "block", maxWidth: "100%", maxHeight: "80vh", objectFit: "contain" }} /><p style={{ margin: ".65rem .2rem .1rem", color: "#18372d" }}>{selectedReview.label}</p></div></div>}
-    <section id="contact" className="contact-section" aria-labelledby="contact-title"><div><div className="section-index">02 <span>/</span> {copy("contact.label", "تواصل")}</div><h2 id="contact-title">{copy("contact.title", "تابعنا وخليك")}<br /><em>{copy("contact.accent", "قريب من الجديد.")}</em></h2></div><div className="social-links"><a href={copy("contact.instagram", "https://www.instagram.com/delicious_grape_leaves94/")} target="_blank" rel="noreferrer"><Instagram size={22} /><span>{copy("contact.instagramLabel", "Instagram")}</span><small>{copy("contact.instagramHandle", "@delicious_grape_leaves94")}</small><ArrowLeft size={17} /></a><button onClick={openTikTok}><Music2 size={22} /><span>{copy("contact.tiktokLabel", "TikTok")}</span><small>{copy("contact.tiktokHint", "@delicious_grape_leaves")}</small><ArrowLeft size={17} /></button><button onClick={openInquiry}><MessageCircle size={22} /><span>{copy("contact.whatsappLabel", "WhatsApp")}</span><small>{copy("contact.whatsappHint", "للاستفسارات والتواصل مباشرة")}</small><ArrowLeft size={17} /></button></div></section>
-    <footer className="site-footer"><a className="brand-lockup footer-brand" href="#top" aria-label="العودة إلى بداية الصفحة"><img src={brandMark} alt="رمز ورقة عنب مطوية" className="brand-mark" /><span><strong>{copy("brand.primary", "ورق العنب")}</strong><em>{copy("brand.secondary", "اللذيذ")}</em></span></a><p>{copy("footer.description", "من مطبخنا لبيتك في القاهرة.")}</p><button onClick={openInquiry}>{copy("footer.order", "واتساب الطلبات")}</button></footer>
-  </main>;
+  return (
+    <main className="cairo-v2" dir="rtl">
+      <header className="cairo-v2__header">
+        <button
+          className="cairo-v2__menu-button"
+          aria-label={isMenuOpen ? "إغلاق القائمة" : "فتح القائمة"}
+          aria-expanded={isMenuOpen}
+          onClick={() => setIsMenuOpen((open) => !open)}
+        >
+          {isMenuOpen ? <X size={23} /> : <Menu size={24} />}
+        </button>
+
+        <button className="cairo-v2__logo-button" onClick={() => scrollToSection("top")} aria-label="الرئيسية">
+          <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" />
+        </button>
+
+        <button className="cairo-v2__cart-button" onClick={() => scrollToSection("order")} aria-label="الانتقال إلى الطلب">
+          <ShoppingBag size={22} />
+          {itemCount > 0 && <span>{itemCount}</span>}
+        </button>
+      </header>
+
+      {isMenuOpen && (
+        <nav className="cairo-v2__mobile-nav" aria-label="أقسام الموقع">
+          {[
+            [copy("nav.menu", "المنيو"), "order"],
+            [copy("nav.delivery", "التوصيل"), "delivery"],
+            [copy("nav.reviews", "آراء العملاء"), "reviews"],
+            [copy("nav.contact", "تواصل"), "contact"],
+          ].map(([label, id]) => (
+            <button
+              key={id}
+              onClick={() => {
+                setIsMenuOpen(false);
+                scrollToSection(id);
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      )}
+
+      <section id="top" className="cairo-v2__hero">
+        <div className="cairo-v2__hero-copy">
+          <span className="cairo-v2__eyebrow">
+            <Leaf size={16} />
+            {copy("home.eyebrow", "ورق عنب منزلي في القاهرة")}
+          </span>
+          <h1>
+            {copy("home.title.primary", "لفّة متظبطة.")}
+            <strong>{copy("home.title.accent", "قعدة مبسوطة.")}</strong>
+          </h1>
+          <p>{copy("home.description", "اختار نوع ورق العنب، ثم زِد العدد جنب كل صنف.")}</p>
+        </div>
+
+        <figure className="cairo-v2__hero-photo">
+          <img src={foodPhotos[1]} alt={copy("home.heroAlt", "صينية ورق عنب محضرة طازجة بالليمون")} />
+        </figure>
+
+        <button className="cairo-v2__hero-cta" onClick={() => scrollToSection("order")}>
+          <ShoppingBag size={20} />
+          {copy("order.cta", "اطلب من المنيو")}
+        </button>
+
+        <div className="cairo-v2__hero-points">
+          <span><Truck size={21} />{copy("delivery.areas", "توصيل لجميع أنحاء القاهرة")}</span>
+          <span><Store size={21} />{copy("delivery.pickup", "استلام من الثلاثيني — فيصل")}</span>
+          <span><Leaf size={21} />{copy("home.note", "طازج عند الطلب")}</span>
+        </div>
+      </section>
+
+      <section id="order" className="cairo-v2__order" aria-labelledby="order-title">
+        <div className="cairo-v2__section-heading">
+          <span>{copy("order.sectionLabel", "المنيو")}</span>
+          <h2 id="order-title">
+            {copy("order.title", "اطلبها")} <em>{copy("order.accent", "بسهولة.")}</em>
+          </h2>
+          <p>{copy("order.description", "اختر النوع أولًا، ثم أضف الصنف والعدد. يمكنك تبديل النوع وإضافة الصنف نفسه مجددًا.")}</p>
+        </div>
+
+        <div className="cairo-v2__type-switch" role="radiogroup" aria-label="نوع ورق العنب">
+          {orderTypes.map((type) => (
+            <button
+              key={type}
+              role="radio"
+              aria-checked={orderType === type}
+              className={orderType === type ? "is-active" : ""}
+              onClick={() => setOrderType(type)}
+            >
+              <Leaf size={17} />
+              {type}
+            </button>
+          ))}
+        </div>
+
+        <div className="cairo-v2__order-layout">
+          <div className="cairo-v2__menu-list">
+            {displayMenuItems.map((item, index) => {
+              const cartKey = item.category === "ورق عنب" ? `${item.id}::${orderType}` : item.id;
+              const qty = quantities[cartKey] ?? 0;
+              const photo = foodPhotos[index % foodPhotos.length];
+
+              return (
+                <article key={item.id} className={`cairo-v2__product ${qty > 0 ? "is-selected" : ""}`}>
+                  <div className="cairo-v2__product-photo">
+                    <img src={photo} alt="" />
+                  </div>
+
+                  <div className="cairo-v2__product-copy">
+                    <div className="cairo-v2__product-meta">
+                      <small>{item.category}</small>
+                      {item.tag && <b>{item.tag}</b>}
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                    {item.category === "ورق عنب" && (
+                      <span>{copy("order.selectedType", "النوع المضاف الآن")} : {orderType}</span>
+                    )}
+                  </div>
+
+                  <div className="cairo-v2__product-buy">
+                    <strong>{item.price} <small>ج.م</small></strong>
+                    <div className="cairo-v2__qty">
+                      <button aria-label={`إنقاص ${item.title}`} onClick={() => changeQuantity(cartKey, -1)} disabled={qty === 0}>
+                        <Minus size={16} />
+                      </button>
+                      <output aria-label={`عدد ${item.title}`}>{qty}</output>
+                      <button aria-label={`زيادة ${item.title}`} onClick={() => changeQuantity(cartKey, 1)}>
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          <aside className="cairo-v2__summary" aria-label="ملخص وإجمالي الطلب">
+            <div className="cairo-v2__summary-title">
+              <ShoppingBag size={19} />
+              <span>{copy("order.summaryTitle", "ملخص طلبك")}</span>
+            </div>
+
+            {cartItems.length ? (
+              <div className="cairo-v2__summary-items">
+                {cartItems.map((item) => (
+                  <div key={item.cartKey}>
+                    <span>
+                      {item.title}
+                      {item.itemType ? <small> · {item.itemType}</small> : null}
+                      <small> × {item.quantity}</small>
+                    </span>
+                    <strong>{item.subtotal} ج.م</strong>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="cairo-v2__empty">{copy("order.emptyCart", "اختر النوع ثم زِد العدد بجانب الصنف المطلوب.")}</p>
+            )}
+
+            <div className="cairo-v2__total">
+              <span>{copy("order.totalLabel", "الإجمالي النهائي")}</span>
+              <strong>{total} <small>ج.م</small></strong>
+            </div>
+
+            <button className="cairo-v2__submit" onClick={sendOrder}>
+              <Send size={18} />
+              {copy("order.submit", "إرسال الطلب")}
+            </button>
+            <p>{copy("order.note", "سيظهر النوع والكميات في رسالة واتساب.")}</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="delivery" className="cairo-v2__delivery" aria-labelledby="delivery-title">
+        <div className="cairo-v2__section-heading cairo-v2__section-heading--light">
+          <span>{copy("delivery.label", "التوصيل")}</span>
+          <h2 id="delivery-title">
+            {copy("delivery.title", "من مطبخنا")} <em>{copy("delivery.accent", "لبيتك.")}</em>
+          </h2>
+        </div>
+
+        <div className="cairo-v2__info-grid">
+          <article><Truck /><div><strong>{copy("delivery.areas", "توصيل لجميع أنحاء القاهرة")}</strong></div></article>
+          <article><MapPin /><div><strong>{copy("delivery.points", "نقاط التوصيل المتاحة: فيصل وأكتوبر")}</strong></div></article>
+          <article><Store /><div><strong>{copy("delivery.pickup", "استلام من الثلاثيني — فيصل")}</strong></div></article>
+          <article><Clock /><div><strong>{copy("delivery.prepTime", "يفضل الحجز قبل يوم حتى الساعة 12، أو حسب الكمية المتوفرة")}</strong></div></article>
+          <article><Clock /><div><strong>{copy("delivery.eta", "وقت التوصيل يختلف حسب المنطقة")}</strong></div></article>
+          <article><CreditCard /><div><strong>{copy("payment.methods", "الدفع: كاش، فودافون كاش، أو إنستاباي")}</strong></div></article>
+        </div>
+
+        <figure className="cairo-v2__delivery-photo">
+          <img src={foodPhotos[4]} alt="" />
+        </figure>
+      </section>
+
+      <section id="reviews" className="cairo-v2__reviews" aria-labelledby="reviews-title">
+        <div className="cairo-v2__section-heading">
+          <span>{copy("reviews.label", "آراء العملاء")}</span>
+          <h2 id="reviews-title">
+            {copy("reviews.title", "تجارب")} <em>{copy("reviews.accent", "من عملائنا.")}</em>
+          </h2>
+        </div>
+
+        <div className="cairo-v2__reviews-grid">
+          {customerReviews.map((review, index) => (
+            <article key={index} className="cairo-v2__review-card">
+              <MessageCircle size={22} />
+              <p>{review}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="contact" className="cairo-v2__contact" aria-labelledby="contact-title">
+        <div className="cairo-v2__section-heading cairo-v2__section-heading--light">
+          <span>{copy("contact.label", "تواصل")}</span>
+          <h2 id="contact-title">
+            {copy("contact.title", "تابعنا وخليك")} <em>{copy("contact.accent", "قريب من الجديد.")}</em>
+          </h2>
+        </div>
+
+        <div className="cairo-v2__socials">
+          <a href={copy("contact.instagram", "https://www.instagram.com/delicious_grape_leaves94/")} target="_blank" rel="noreferrer">
+            <Instagram />
+            <span>{copy("contact.instagramLabel", "Instagram")}</span>
+            <small>{copy("contact.instagramHandle", "@delicious_grape_leaves94")}</small>
+          </a>
+          <button onClick={() => window.open(tiktokUrl, "_blank", "noopener,noreferrer")}>
+            <Music2 />
+            <span>{copy("contact.tiktokLabel", "TikTok")}</span>
+            <small>{copy("contact.tiktokHint", "@delicious_grape_leaves")}</small>
+          </button>
+          <button onClick={openInquiry}>
+            <MessageCircle />
+            <span>{copy("contact.whatsappLabel", "WhatsApp")}</span>
+            <small>{copy("contact.whatsappHint", "للاستفسارات والتواصل مباشرة")}</small>
+          </button>
+        </div>
+      </section>
+
+      <footer className="cairo-v2__footer">
+        <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" />
+        <p>{copy("footer.description", "من مطبخنا لبيتك في القاهرة.")}</p>
+        <button onClick={openInquiry}>{copy("footer.order", "واتساب الطلبات")}</button>
+      </footer>
+
+      {itemCount > 0 && (
+        <button className="cairo-v2__mobile-cart" onClick={() => scrollToSection("order")}>
+          <span><ShoppingBag size={18} /> {itemCount}</span>
+          <strong>{total} ج.م</strong>
+        </button>
+      )}
+    </main>
+  );
 }
