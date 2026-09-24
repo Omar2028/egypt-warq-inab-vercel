@@ -23,7 +23,7 @@ import "./home-redesign.css";
 const WHATSAPP_NUMBER = "201141672769";
 const TIKTOK_URL = "https://www.tiktok.com/@delicious_grape_leaves";
 
-const brandLogo = "/brand/cairo/logo.jpeg";
+const brandLogo = "/brand/cairo/logo.jpeg";\nconst fallbackBrandLogo = "/manus-storage/delicious-grape-leaves-mark_7ed4eb45.png";\nconst fallbackFoodPhoto = "/manus-storage/delicious-grape-leaves-hero_9c69dcdc.jpg";
 const foodPhotos = [
   "/brand/cairo/grape-leaves-spicy.jpeg",
   "/brand/cairo/grape-leaves-pomegranate.jpeg",
@@ -195,7 +195,7 @@ export default function Home() {
         </button>
 
         <button className="cairo-v2__logo-button" onClick={() => scrollToSection("top")} aria-label="الرئيسية">
-          <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" />
+          <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackBrandLogo; }} />
         </button>
 
         <button className="cairo-v2__cart-button" onClick={() => scrollToSection("order")} aria-label="الانتقال إلى الطلب">
@@ -239,7 +239,7 @@ export default function Home() {
         </div>
 
         <figure className="cairo-v2__hero-photo">
-          <img src={foodPhotos[1]} alt={copy("home.heroAlt", "صينية ورق عنب محضرة طازجة بالليمون")} />
+          <img src={foodPhotos[1]} alt={copy("home.heroAlt", "صينية ورق عنب محضرة طازجة بالليمون")} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackFoodPhoto; }} />
         </figure>
 
         <button className="cairo-v2__hero-cta" onClick={() => scrollToSection("order")}>
@@ -288,7 +288,7 @@ export default function Home() {
               return (
                 <article key={item.id} className={`cairo-v2__product ${qty > 0 ? "is-selected" : ""}`}>
                   <div className="cairo-v2__product-photo">
-                    <img src={photo} alt="" />
+                    <img src={photo} alt="" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackFoodPhoto; }} />
                   </div>
 
                   <div className="cairo-v2__product-copy">
@@ -375,7 +375,7 @@ export default function Home() {
         </div>
 
         <figure className="cairo-v2__delivery-photo">
-          <img src={foodPhotos[4]} alt="" />
+          <img src={foodPhotos[4]} alt="" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackFoodPhoto; }} />
         </figure>
       </section>
 
@@ -425,7 +425,7 @@ export default function Home() {
       </section>
 
       <footer className="cairo-v2__footer">
-        <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" />
+        <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackBrandLogo; }} />
         <p>{copy("footer.description", "من مطبخنا لبيتك في القاهرة.")}</p>
         <button onClick={openInquiry}>{copy("footer.order", "واتساب الطلبات")}</button>
       </footer>
