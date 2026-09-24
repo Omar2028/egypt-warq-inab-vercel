@@ -25,15 +25,14 @@ const TIKTOK_URL = "https://www.tiktok.com/@delicious_grape_leaves";
 
 const brandLogo = "/brand/cairo/logo.jpeg";
 const foodPhotos = [
-
-  "/brand/cairo/grape-leaves-spicy.jpeg",
-  "/brand/cairo/grape-leaves-pomegranate.jpeg",
-  "/brand/cairo/grape-leaves-trays.jpeg",
-  "/brand/cairo/grape-leaves-close.jpeg",
-  "/brand/cairo/grape-leaves-pour.jpeg",
-  "/brand/cairo/grape-leaves-limes.jpeg",
-  "/brand/cairo/grape-leaves-hand.jpeg",
-  "/brand/cairo/grape-leaves-pot.jpeg",
+  "/brand/cairo/food-01.jpeg",
+  "/brand/cairo/food-02.jpeg",
+  "/brand/cairo/food-03.jpeg",
+  "/brand/cairo/food-04.jpeg",
+  "/brand/cairo/food-05.jpeg",
+  "/brand/cairo/food-06.jpeg",
+  "/brand/cairo/food-07.jpeg",
+  "/brand/cairo/food-08.jpeg",
 ];
 
 type MenuItem = {
