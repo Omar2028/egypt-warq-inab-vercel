@@ -200,10 +200,7 @@ export default function Home() {
 
         <button className="cairo-v2__logo-button" onClick={() => scrollToSection("top")} aria-label="الرئيسية">
           <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" />
-          <span>
-            <strong>{copy("brand.primary", "ورق العنب")}</strong>
-            <em>{copy("brand.secondary", "اللذيذ")}</em>
-          </span>
+          <span className="cairo-v2__tagline">من جدة للقاهرة</span>
         </button>
 
         <button className="cairo-v2__cart-button" onClick={() => scrollToSection("order")} aria-label="الانتقال إلى الطلب">
@@ -249,7 +246,6 @@ export default function Home() {
         <figure className="cairo-v2__hero-photo">
           <div className="cairo-v2__hero-arch" aria-hidden="true" />
           <img src={foodPhotos[1]} alt={copy("home.heroAlt", "صينية ورق عنب محضرة طازجة بالليمون")} />
-          <img className="cairo-v2__hero-logo" src={brandLogo} alt="" aria-hidden="true" />
         </figure>
 
         <button className="cairo-v2__hero-cta" onClick={() => scrollToSection("order")}>
@@ -261,16 +257,6 @@ export default function Home() {
           <span><Truck size={21} />{copy("delivery.areas", "توصيل لجميع أنحاء القاهرة")}</span>
           <span><Store size={21} />{copy("delivery.pickup", "استلام من الثلاثيني — فيصل")}</span>
           <span><Leaf size={21} />{copy("home.note", "طازج عند الطلب")}</span>
-        </div>
-      </section>
-
-      <section className="cairo-v2__gallery" aria-label="صور ورق العنب">
-        <div className="cairo-v2__gallery-track">
-          {foodPhotos.map((photo, index) => (
-            <figure key={photo} className={`cairo-v2__gallery-item cairo-v2__gallery-item--${(index % 3) + 1}`}>
-              <img src={photo} alt="" loading={index > 2 ? "lazy" : "eager"} />
-            </figure>
-          ))}
         </div>
       </section>
 
@@ -300,17 +286,12 @@ export default function Home() {
 
         <div className="cairo-v2__order-layout">
           <div className="cairo-v2__menu-list">
-            {visibleMenuItems.map((item, index) => {
+            {visibleMenuItems.map((item) => {
               const cartKey = item.category === "ورق عنب" ? `${item.id}::${orderType}` : item.id;
               const qty = quantities[cartKey] ?? 0;
-              const photo = foodPhotos[index % foodPhotos.length];
 
               return (
                 <article key={item.id} className={`cairo-v2__product ${qty > 0 ? "is-selected" : ""}`}>
-                  <div className="cairo-v2__product-photo">
-                    <img src={photo} alt="" />
-                  </div>
-
                   <div className="cairo-v2__product-copy">
                     <div className="cairo-v2__product-meta">
                       <small>{item.category}</small>
@@ -377,6 +358,16 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="cairo-v2__gallery" aria-label="صور ورق العنب">
+        <div className="cairo-v2__gallery-track">
+          {foodPhotos.map((photo, index) => (
+            <figure key={photo} className={`cairo-v2__gallery-item cairo-v2__gallery-item--${(index % 3) + 1}`}>
+              <img src={photo} alt="" loading={index > 2 ? "lazy" : "eager"} />
+            </figure>
+          ))}
+        </div>
+      </section>
+
       <section id="delivery" className="cairo-v2__delivery" aria-labelledby="delivery-title">
         <div className="cairo-v2__section-heading cairo-v2__section-heading--light">
           <span>{copy("delivery.label", "التوصيل")}</span>
@@ -385,7 +376,7 @@ export default function Home() {
           </h2>
         </div>
 
-        <div className="cairo-v2__info-grid">
+        <div className="cairo-v2__delivery-list">
           <article><Truck /><div><strong>{copy("delivery.areas", "توصيل لجميع أنحاء القاهرة")}</strong></div></article>
           <article><MapPin /><div><strong>{copy("delivery.points", "نقاط التوصيل المتاحة: فيصل وأكتوبر")}</strong></div></article>
           <article><Store /><div><strong>{copy("delivery.pickup", "استلام من الثلاثيني — فيصل")}</strong></div></article>
@@ -394,9 +385,6 @@ export default function Home() {
           <article><CreditCard /><div><strong>{copy("payment.methods", "الدفع: كاش، فودافون كاش، أو إنستاباي")}</strong></div></article>
         </div>
 
-        <figure className="cairo-v2__delivery-photo">
-          <img src={foodPhotos[4]} alt="" />
-        </figure>
       </section>
 
       <section id="reviews" className="cairo-v2__reviews" aria-labelledby="reviews-title">
