@@ -24,9 +24,8 @@ const WHATSAPP_NUMBER = "201141672769";
 const TIKTOK_URL = "https://www.tiktok.com/@delicious_grape_leaves";
 
 const brandLogo = "/brand/cairo/logo.jpeg";
-const fallbackBrandLogo = "/manus-storage/delicious-grape-leaves-mark_7ed4eb45.png";
-const fallbackFoodPhoto = "/manus-storage/delicious-grape-leaves-hero_9c69dcdc.jpg";
 const foodPhotos = [
+
   "/brand/cairo/grape-leaves-spicy.jpeg",
   "/brand/cairo/grape-leaves-pomegranate.jpeg",
   "/brand/cairo/grape-leaves-trays.jpeg",
@@ -48,7 +47,6 @@ type MenuItem = {
 
 const fallbackMenuItems: MenuItem[] = [
   { id: "20", title: "20 حبة", description: "لشخصين أو مزاجك لوحدك", price: 150, category: "ورق عنب" },
-  { id: "30", title: "30 حبة", description: "للقعدة الصغيرة", price: 195, category: "ورق عنب" },
   { id: "50", title: "50 حبة / كيلو", description: "يعادل تقريبًا كيلو ورق عنب", price: 335, category: "ورق عنب", tag: "الأكثر طلبًا" },
   { id: "80", title: "80 حبة", description: "للمة الحلوة", price: 500, category: "ورق عنب" },
   { id: "100", title: "100 حبة", description: "للعزومات", price: 600, category: "ورق عنب" },
@@ -112,13 +110,18 @@ export default function Home() {
     [managedProducts.data],
   );
 
+  const visibleMenuItems = useMemo(
+    () => displayMenuItems.filter((item) => !/^\s*30\s*حبة/.test(item.title)),
+    [displayMenuItems],
+  );
+
   const whatsappNumber = settings["contact.whatsapp"] || WHATSAPP_NUMBER;
   const tiktokUrl = settings["contact.tiktok"] || TIKTOK_URL;
   const orderTypes = [copy("order.typeNormal", "عادي"), copy("order.typeSpicy", "حار")];
 
   const cartItems = useMemo(
     () =>
-      displayMenuItems.flatMap((item) => {
+      visibleMenuItems.flatMap((item) => {
         const types = item.category === "ورق عنب" ? orderTypes : ["بدون نوع"];
         return types
           .map((itemType) => {
@@ -134,7 +137,7 @@ export default function Home() {
           })
           .filter((item) => item.quantity > 0);
       }),
-    [displayMenuItems, orderTypes, quantities],
+    [visibleMenuItems, orderTypes, quantities],
   );
 
   const total = cartItems.reduce((sum, item) => sum + item.subtotal, 0);
@@ -197,7 +200,11 @@ export default function Home() {
         </button>
 
         <button className="cairo-v2__logo-button" onClick={() => scrollToSection("top")} aria-label="الرئيسية">
-          <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackBrandLogo; }} />
+          <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" />
+          <span>
+            <strong>{copy("brand.primary", "ورق العنب")}</strong>
+            <em>{copy("brand.secondary", "اللذيذ")}</em>
+          </span>
         </button>
 
         <button className="cairo-v2__cart-button" onClick={() => scrollToSection("order")} aria-label="الانتقال إلى الطلب">
@@ -241,7 +248,9 @@ export default function Home() {
         </div>
 
         <figure className="cairo-v2__hero-photo">
-          <img src={foodPhotos[1]} alt={copy("home.heroAlt", "صينية ورق عنب محضرة طازجة بالليمون")} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackFoodPhoto; }} />
+          <div className="cairo-v2__hero-arch" aria-hidden="true" />
+          <img src={foodPhotos[1]} alt={copy("home.heroAlt", "صينية ورق عنب محضرة طازجة بالليمون")} />
+          <img className="cairo-v2__hero-logo" src={brandLogo} alt="" aria-hidden="true" />
         </figure>
 
         <button className="cairo-v2__hero-cta" onClick={() => scrollToSection("order")}>
@@ -253,6 +262,16 @@ export default function Home() {
           <span><Truck size={21} />{copy("delivery.areas", "توصيل لجميع أنحاء القاهرة")}</span>
           <span><Store size={21} />{copy("delivery.pickup", "استلام من الثلاثيني — فيصل")}</span>
           <span><Leaf size={21} />{copy("home.note", "طازج عند الطلب")}</span>
+        </div>
+      </section>
+
+      <section className="cairo-v2__gallery" aria-label="صور ورق العنب">
+        <div className="cairo-v2__gallery-track">
+          {foodPhotos.map((photo, index) => (
+            <figure key={photo} className={`cairo-v2__gallery-item cairo-v2__gallery-item--${(index % 3) + 1}`}>
+              <img src={photo} alt="" loading={index > 2 ? "lazy" : "eager"} />
+            </figure>
+          ))}
         </div>
       </section>
 
@@ -282,7 +301,7 @@ export default function Home() {
 
         <div className="cairo-v2__order-layout">
           <div className="cairo-v2__menu-list">
-            {displayMenuItems.map((item, index) => {
+            {visibleMenuItems.map((item, index) => {
               const cartKey = item.category === "ورق عنب" ? `${item.id}::${orderType}` : item.id;
               const qty = quantities[cartKey] ?? 0;
               const photo = foodPhotos[index % foodPhotos.length];
@@ -290,7 +309,7 @@ export default function Home() {
               return (
                 <article key={item.id} className={`cairo-v2__product ${qty > 0 ? "is-selected" : ""}`}>
                   <div className="cairo-v2__product-photo">
-                    <img src={photo} alt="" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackFoodPhoto; }} />
+                    <img src={photo} alt="" />
                   </div>
 
                   <div className="cairo-v2__product-copy">
@@ -377,7 +396,7 @@ export default function Home() {
         </div>
 
         <figure className="cairo-v2__delivery-photo">
-          <img src={foodPhotos[4]} alt="" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackFoodPhoto; }} />
+          <img src={foodPhotos[4]} alt="" />
         </figure>
       </section>
 
@@ -427,7 +446,7 @@ export default function Home() {
       </section>
 
       <footer className="cairo-v2__footer">
-        <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = fallbackBrandLogo; }} />
+        <img src={brandLogo} alt="ورق العنب اللذيذ — القاهرة" />
         <p>{copy("footer.description", "من مطبخنا لبيتك في القاهرة.")}</p>
         <button onClick={openInquiry}>{copy("footer.order", "واتساب الطلبات")}</button>
       </footer>
