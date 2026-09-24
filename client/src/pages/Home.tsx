@@ -23,7 +23,9 @@ import "./home-redesign.css";
 const WHATSAPP_NUMBER = "201141672769";
 const TIKTOK_URL = "https://www.tiktok.com/@delicious_grape_leaves";
 
-const brandLogo = "/brand/cairo/logo.jpeg";\nconst fallbackBrandLogo = "/manus-storage/delicious-grape-leaves-mark_7ed4eb45.png";\nconst fallbackFoodPhoto = "/manus-storage/delicious-grape-leaves-hero_9c69dcdc.jpg";
+const brandLogo = "/brand/cairo/logo.jpeg";
+const fallbackBrandLogo = "/manus-storage/delicious-grape-leaves-mark_7ed4eb45.png";
+const fallbackFoodPhoto = "/manus-storage/delicious-grape-leaves-hero_9c69dcdc.jpg";
 const foodPhotos = [
   "/brand/cairo/grape-leaves-spicy.jpeg",
   "/brand/cairo/grape-leaves-pomegranate.jpeg",
